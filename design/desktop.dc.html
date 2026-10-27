@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#060e20;overflow:hidden}
+.ms{font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;-webkit-font-feature-settings:'liga';font-feature-settings:'liga';user-select:none}
+a{color:#4cd7f6}a:hover{color:#acedff}
+input[type=range]{accent-color:#4cd7f6}
+input::placeholder{color:#869397}
+*::-webkit-scrollbar{width:10px;height:10px}*::-webkit-scrollbar-thumb{background:#2d3449;border-radius:8px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #4cd7f6;outline-offset:2px}
+</style>
+</helmet>
+<div style="position:fixed;inset:0;overflow:hidden;font-family:Inter,sans-serif;color:#dae2fd;background:radial-gradient(1200px 700px at 78% 90%,#0f2a4a 0%,transparent 60%),radial-gradient(900px 600px at 10% 10%,#12304a 0%,transparent 55%),#090d16">
+
+<!-- Desktop icons -->
+<div style="position:absolute;left:20px;top:20px;display:flex;flex-direction:column;gap:14px">
+<sc-for list="{{ deskIcons }}" as="d" hint-placeholder-count="3">
+<div onClick="{{ d.select }}" onDoubleClick="{{ d.open }}" style="width:96px;padding:8px 4px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:default;background:{{ d.bg }}">
+<div style="width:52px;height:52px;border-radius:12px;background:#171f33;display:flex;align-items:center;justify-content:center;color:#4cd7f6"><span class="ms" style="font-size:30px">{{ d.icon }}</span></div>
+<span style="font-size:12px;color:#dae2fd;text-align:center;text-shadow:0 1px 3px #000">{{ d.name }}</span>
+</div>
+</sc-for>
+</div>
+
+<!-- MAIN WINDOW -->
+<sc-if value="{{ winOpen }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;inset:{{ winInset }};background:#0b1326;border-radius:{{ winRadius }};box-shadow:0 20px 50px rgba(0,0,0,.7);border:1px solid rgba(76,215,246,.18);display:flex;flex-direction:column;overflow:hidden">
+<div style="height:48px;flex:none;display:flex;align-items:center;gap:14px;padding:0 0 0 16px;background:#060e20;border-bottom:1px solid #1e293b">
+<span class="ms" style="color:#4cd7f6;font-size:22px">gesture</span>
+<span style="font-weight:700;font-size:15px">GestureFlow</span>
+<span style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid rgba(76,215,246,.35);color:#4cd7f6">SUITE</span>
+<div style="flex:1;display:{{ pillDisp }};justify-content:center;min-width:0">
+<div style="display:flex;align-items:center;gap:10px;padding:5px 14px;border-radius:99px;background:#171f33;border:1px solid rgba(76,215,246,.2);font-family:'JetBrains Mono',monospace;font-size:12px;white-space:nowrap;overflow:hidden">
+<span style="width:8px;height:8px;border-radius:50%;background:{{ statusDot }}"></span><span>{{ statusText }}</span><span style="color:#869397">|</span><span style="color:#4cd7f6">{{ topTele }}</span>
+</div></div>
+<button onClick="{{ toggleTracking }}" style="border:1px solid {{ pauseBorder }};cursor:pointer;font-family:inherit;color:{{ pauseColor }};background:#171f33;border-radius:8px;height:34px;padding:0 12px;font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;white-space:nowrap;flex:none;margin-left:auto"><span class="ms" style="font-size:18px">{{ pauseIcon }}</span>{{ pauseLabel }}</button>
+<div style="display:flex;height:48px">
+<button onClick="{{ minWin }}" aria-label="Minimizar" style="border:0;background:transparent;color:#dae2fd;width:46px;cursor:pointer" style-hover="background:#222a3d"><span class="ms" style="font-size:18px">remove</span></button>
+<button onClick="{{ maxWin }}" aria-label="Maximizar" style="border:0;background:transparent;color:#dae2fd;width:46px;cursor:pointer" style-hover="background:#222a3d"><span class="ms" style="font-size:16px">crop_square</span></button>
+<button onClick="{{ closeWin }}" aria-label="Cerrar" style="border:0;background:transparent;color:#dae2fd;width:46px;cursor:pointer" style-hover="background:#93000a"><span class="ms" style="font-size:18px">close</span></button>
+</div></div>
+
+<div style="flex:1;display:flex;min-height:0">
+<!-- sidebar -->
+<nav style="width:{{ navW }};flex:none;background:#060e20;border-right:1px solid #1e293b;padding:16px 8px;display:flex;flex-direction:column;gap:6px;overflow:auto">
+<div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;color:#869397;padding:4px 10px 8px;display:{{ navTxt }}">NAVEGACIÓN</div>
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="5">
+<button onClick="{{ n.go }}" style="border:0;cursor:pointer;text-align:left;font-family:inherit;min-height:60px;border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:12px;background:{{ n.bg }};color:{{ n.color }}" style-hover="background:#222a3d">
+<span class="ms">{{ n.icon }}</span>
+<span style="display:{{ navTxt }};flex-direction:column;gap:2px"><span style="font-weight:600;font-size:14px">{{ n.t }}</span><span style="font-size:12px;color:#869397">{{ n.s }}</span></span>
+</button>
+</sc-for>
+<div style="flex:1"></div>
+<div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;color:#869397;padding:8px 10px 4px;display:{{ navTxt }}">SUPERPOSICIONES</div>
+<sc-for list="{{ overlayBtns }}" as="o" hint-placeholder-count="3">
+<button onClick="{{ o.go }}" style="border:1px solid {{ o.border }};cursor:pointer;text-align:left;font-family:inherit;min-height:48px;border-radius:10px;padding:6px 12px;display:flex;align-items:center;gap:10px;background:{{ o.bg }};color:#dae2fd;font-size:13px;font-weight:500" style-hover="background:#222a3d"><span class="ms" style="font-size:20px;color:#4cd7f6">{{ o.icon }}</span><span style="display:{{ navTxt }}">{{ o.t }}</span></button>
+</sc-for>
+<div style="margin-top:8px;padding:10px 12px;display:{{ navTxt }};border-radius:10px;background:#131b2e;font-family:'JetBrains Mono',monospace;font-size:11px;color:#4edea3;line-height:1.5">Driver virtual v1.0.4<br>Servicio Win32 Activo</div>
+</nav>
+
+<main style="flex:1;min-width:0;overflow:auto;padding:28px 32px 40px;display:flex;flex-direction:column;gap:22px">
+
+<!-- ===== MONITOR ===== -->
+<sc-if value="{{ vMon }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
+<div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;color:#4cd7f6">FASE 1 · MONITOR</div>
+<h1 style="margin:4px 0 0;font-size:30px;letter-spacing:-.02em">Motor Biomecánico de Visión Artificial</h1>
+<p style="margin:6px 0 0;color:#bcc9cd;font-size:15px">Mueve el ratón sobre la cámara: es tu mano. Clic = pellizco.</p></div>
+<div style="padding:8px 14px;border-radius:10px;background:#171f33;font-family:'JetBrains Mono',monospace;font-size:12px"><span style="color:#869397">PERFIL:</span> <span style="color:#4cd7f6;font-weight:600">{{ modeName }}</span></div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
+<div style="flex:1 1 520px;min-width:0;display:flex;flex-direction:column;gap:14px">
+<div onMouseMove="{{ feedMove }}" onMouseDown="{{ feedDown }}" onMouseUp="{{ feedUp }}" onMouseLeave="{{ feedUp }}" style="position:relative;aspect-ratio:16/10;background:#060e20;border-radius:16px;overflow:hidden;cursor:crosshair;box-shadow:inset 0 0 40px rgba(0,0,0,.6);background-image:radial-gradient(#171f33 1px,transparent 1px);background-size:24px 24px">
+<svg viewBox="0 0 1000 625" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:{{ feedOpacity }}">
+<rect x="40" y="35" width="920" height="555" fill="none" stroke="#2d3449" stroke-dasharray="6 6" stroke-width="1.5"></rect>
+<path d="{{ hand.bones }}" stroke="#4cd7f6" stroke-width="3" stroke-linecap="round" fill="none" opacity=".8"></path>
+<path d="{{ hand.dots }}" stroke="#06b6d4" stroke-width="10" stroke-linecap="round" fill="none"></path>
+<path d="{{ hand.pinchLine }}" stroke="#4edea3" stroke-width="4" stroke-linecap="round" fill="none"></path>
+<path d="{{ hand.tipDot }}" stroke="{{ hand.tipColor }}" stroke-width="18" stroke-linecap="round" fill="none"></path>
+<circle cx="{{ hand.tx }}" cy="{{ hand.ty }}" r="{{ hand.tol }}" fill="rgba(76,215,246,.08)" stroke="#4cd7f6" stroke-dasharray="5 4" stroke-width="1.5"></circle>
+<rect x="{{ hand.lx }}" y="{{ hand.ly }}" width="215" height="44" rx="6" fill="#0b1326" fill-opacity=".92" stroke="#4cd7f6"></rect>
+<text x="{{ hand.lx2 }}" y="{{ hand.ly2 }}" fill="#dae2fd" font-family="JetBrains Mono" font-size="13" font-weight="600">{{ hand.label }}</text>
+<text x="{{ hand.lx2 }}" y="{{ hand.ly3 }}" fill="#4edea3" font-family="JetBrains Mono" font-size="12">{{ hand.tolLabel }}</text>
+</svg>
+<div style="position:absolute;left:14px;top:14px;display:flex;gap:10px;align-items:center;background:rgba(23,31,51,.92);padding:8px 14px;border-radius:12px;font-size:13px;font-weight:600"><span style="width:10px;height:10px;border-radius:50%;background:{{ statusDot }}"></span>{{ handDetected }}<span style="font-family:'JetBrains Mono',monospace;color:#4edea3">{{ confText }}</span></div>
+<div style="position:absolute;left:14px;top:60px;background:rgba(34,42,61,.92);padding:6px 12px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#4cd7f6">{{ kalmanText }}</div>
+<div style="position:absolute;left:14px;bottom:14px;display:{{ pillDisp }};background:rgba(6,14,32,.85);padding:4px 10px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#bcc9cd">FOV 88° | LANDMARKS 21/21</div>
+<div style="position:absolute;right:14px;bottom:14px;background:rgba(23,31,51,.92);padding:6px 14px;border-radius:12px;display:flex;align-items:center;gap:8px;color:{{ pinchColor }};font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600"><span class="ms" style="font-size:18px">touch_app</span>{{ pinchText }}</div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;background:#131b2e;padding:14px;border-radius:16px">
+<button onClick="{{ toggleTracking }}" style="flex:1 1 220px;min-height:64px;border:0;cursor:pointer;font-family:inherit;border-radius:12px;background:{{ trkBg }};color:{{ trkColor }};display:flex;align-items:center;justify-content:center;gap:12px;font-weight:700;font-size:18px"><span class="ms" style="font-size:28px">{{ pauseIcon }}</span><span style="display:flex;flex-direction:column;align-items:flex-start"><span>{{ trkTitle }}</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500">{{ trkSub }}</span></span></button>
+<button onClick="{{ cycleCam }}" style="flex:1 1 180px;min-height:64px;border:0;cursor:pointer;font-family:inherit;border-radius:12px;background:#171f33;color:#dae2fd;text-align:left;padding:0 16px;display:flex;flex-direction:column;justify-content:center"><span style="font-size:12px;color:#869397">Dispositivo (clic para cambiar)</span><span style="font-weight:600;display:flex;gap:6px;align-items:center"><span class="ms" style="font-size:20px;color:#4cd7f6">videocam</span>{{ camName }}</span></button>
+<div style="flex:1 1 200px;display:flex;background:#171f33;padding:4px;border-radius:12px;gap:4px;min-height:64px;box-sizing:border-box">
+<sc-for list="{{ handOpts }}" as="h" hint-placeholder-count="2"><button onClick="{{ h.go }}" style="flex:1;border:0;cursor:pointer;font-family:inherit;border-radius:9px;font-weight:600;font-size:14px;background:{{ h.bg }};color:{{ h.color }}">{{ h.t }}</button></sc-for>
+</div>
+<button onClick="{{ recenter }}" style="flex:0 0 110px;min-height:64px;border:0;cursor:pointer;font-family:inherit;border-radius:12px;background:#222a3d;color:#dae2fd;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:13px;font-weight:600" style-hover="background:#31394d"><span class="ms" style="color:#4cd7f6">filter_center_focus</span>Recentrar</button>
+</div>
+</div>
+<div style="flex:0 1 330px;min-width:260px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:20px;font-weight:700">Telemetría</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;padding:2px 8px;border-radius:6px;background:rgba(27,189,133,.25);color:#4edea3">{{ slaText }}</span></div>
+<sc-for list="{{ tele }}" as="t" hint-placeholder-count="5">
+<div style="background:#171f33;border-radius:14px;padding:16px;display:flex;justify-content:space-between;align-items:center">
+<div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;color:#869397">{{ t.label }}</div>
+<div style="display:flex;gap:6px;align-items:baseline;margin-top:2px"><span style="font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:700;color:{{ t.color }}">{{ t.val }}</span><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#bcc9cd">{{ t.unit }}</span></div>
+<div style="font-size:12px;color:#bcc9cd">{{ t.note }}</div></div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span class="ms" style="color:{{ t.color }}">{{ t.icon }}</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:{{ t.color }}">{{ t.status }}</span></div>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:16px">
+<div style="flex:1 1 300px;background:#131b2e;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;gap:14px;align-items:center"><div style="width:60px;height:60px;border-radius:12px;background:#222a3d;color:#4cd7f6;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:34px">navigation</span></div><div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#4cd7f6;letter-spacing:.06em">ACCIÓN CONTINUA</div><div style="font-size:19px;font-weight:700">Puntero / Movimiento</div><div style="font-size:14px;color:#bcc9cd">Dedo índice como vector de orientación.</div></div></div>
+<div style="background:#171f33;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;font-size:13px"><span style="font-weight:600">{{ pointerState }}</span><span style="font-family:'JetBrains Mono',monospace;color:#4cd7f6;font-weight:600">{{ smoothText }}</span></div>
+</div>
+<div style="flex:1.4 1 360px;background:#131b2e;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center"><div style="display:flex;gap:14px;align-items:center"><div style="width:60px;height:60px;border-radius:12px;background:rgba(6,182,212,.2);color:#4cd7f6;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:34px">pinch</span></div><div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#4edea3;letter-spacing:.06em">DISPARO DISCRETO</div><div style="font-size:19px;font-weight:700">Clic Izquierdo Virtual</div><div style="font-size:14px;color:#bcc9cd">Pellizco pulgar + índice · clics: <b style="color:#dae2fd">{{ clicks }}</b></div></div></div>
+<div style="background:#222a3d;border-radius:10px;padding:6px 14px;text-align:right"><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#869397">ACTIVACIÓN</div><div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:#4edea3">{{ pressure }}%</div></div></div>
+<div style="height:14px;background:#2d3449;border-radius:99px;padding:2px;box-sizing:border-box"><div style="height:100%;width:{{ pressure }}%;border-radius:99px;background:linear-gradient(90deg,#4cd7f6,#4edea3);transition:width .2s"></div></div>
+</div>
+</div>
+</sc-if>
+
+<!-- ===== CONFIG ===== -->
+<sc-if value="{{ vCfg }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between">
+<div style="max-width:720px"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;color:#4cd7f6">FASE 1 · MÓDULO ASISTIDO</div>
+<h1 style="margin:4px 0 0;font-size:30px;letter-spacing:-.02em">Configuración Básica de Movimiento y Clic</h1>
+<p style="margin:6px 0 0;color:#bcc9cd;font-size:15px">Ajusta la respuesta del cursor a tu rango de movilidad. Los cambios se prueban al instante en el campo inferior.</p></div>
+<div style="padding:10px 16px;border-radius:12px;background:#171f33;font-size:13px;color:#bcc9cd">Guardado: <b style="color:{{ savedColor }}">{{ savedText }}</b></div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
+<div style="flex:1 1 440px;min-width:0;background:#171f33;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;gap:12px;align-items:center"><span class="ms" style="color:#4cd7f6">speed</span><span style="font-size:20px;font-weight:600">Control de Movimiento del Cursor</span></div>
+<sc-for list="{{ cfgSliders }}" as="s" hint-placeholder-count="3">
+<div style="background:#131b2e;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline"><span style="font-weight:600">{{ s.label }}</span><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#4cd7f6;background:#2d3449;padding:2px 10px;border-radius:6px">{{ s.text }}</span></div>
+<div style="color:#bcc9cd;font-size:14px">{{ s.hint }}</div>
+<div style="display:flex;align-items:center;gap:14px">
+<button onClick="{{ s.dec }}" aria-label="Disminuir" style="flex:none;width:56px;height:56px;border:0;cursor:pointer;border-radius:12px;background:#222a3d;color:#dae2fd" style-hover="background:#31394d" style-active="transform:scale(.95)"><span class="ms">remove</span></button>
+<input type="range" min="{{ s.min }}" max="{{ s.max }}" step="{{ s.step }}" value="{{ s.val }}" onChange="{{ s.onInput }}" style="flex:1;height:12px;cursor:pointer;min-width:0">
+<button onClick="{{ s.inc }}" aria-label="Aumentar" style="flex:none;width:56px;height:56px;border:0;cursor:pointer;border-radius:12px;background:#222a3d;color:#dae2fd" style-hover="background:#31394d" style-active="transform:scale(.95)"><span class="ms">add</span></button>
+</div></div>
+</sc-for>
+<div style="background:#131b2e;border-radius:14px;padding:16px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+<div style="display:flex;gap:12px;align-items:center;flex:1 1 220px"><span class="ms" style="color:#4edea3">filter_tilt_shift</span><div><div style="font-weight:600">Filtro antitemblor</div><div style="font-size:13px;color:#bcc9cd">Kalman adaptativo contra micro-movimientos.</div></div></div>
+<button onClick="{{ toggleFilter }}" aria-pressed="{{ filter }}" style="position:relative;width:96px;height:56px;border:0;cursor:pointer;border-radius:99px;background:{{ filterBg }};padding:4px;transition:background .2s"><span style="position:absolute;top:4px;left:{{ filterLeft }};width:48px;height:48px;border-radius:50%;background:#00424f;color:#acedff;display:flex;align-items:center;justify-content:center;transition:left .2s"><span class="ms" style="font-size:22px">{{ filterIcon }}</span></span></button>
+</div>
+<div style="background:#131b2e;border-radius:14px;padding:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap"><div style="flex:1 1 200px"><div style="font-weight:600">Zona muerta</div><div style="font-size:13px;color:#bcc9cd">Radio de reposo sin deriva ({{ dead }} px).</div></div>
+<svg viewBox="0 0 100 100" style="width:110px;height:110px"><circle cx="50" cy="50" r="44" fill="none" stroke="#3d494c" stroke-dasharray="3 3" stroke-width="2"></circle><circle cx="50" cy="50" r="{{ deadR }}" fill="rgba(76,215,246,.2)" stroke="#4cd7f6" stroke-width="2"></circle><circle cx="50" cy="50" r="4" fill="#4edea3"></circle><text x="50" y="66" fill="#4cd7f6" font-family="JetBrains Mono" font-size="7" text-anchor="middle">REPOSO</text></svg></div>
+</div>
+<div style="flex:1 1 380px;min-width:0;background:#171f33;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;gap:12px;align-items:center;justify-content:space-between"><span style="display:flex;gap:12px;align-items:center"><span class="ms" style="color:#4cd7f6">ads_click</span><span style="font-size:20px;font-weight:600">Clic Izquierdo</span></span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#4cd7f6;background:rgba(76,215,246,.1);padding:3px 10px;border-radius:99px">FASE 1</span></div>
+<sc-for list="{{ clickModes }}" as="m" hint-placeholder-count="2">
+<button onClick="{{ m.go }}" aria-pressed="{{ m.on }}" style="text-align:left;font-family:inherit;color:#dae2fd;cursor:pointer;border:2px solid {{ m.border }};background:{{ m.bg }};border-radius:14px;padding:16px;display:flex;gap:14px;align-items:flex-start;min-height:64px">
+<span class="ms" style="font-size:30px;color:{{ m.color }}">{{ m.icon }}</span>
+<span style="flex:1"><span style="display:block;font-size:17px;font-weight:600">{{ m.t }}</span><span style="display:block;font-size:13px;color:#bcc9cd;margin-top:4px">{{ m.d }}</span></span>
+<span class="ms" style="color:{{ m.color }}">{{ m.check }}</span>
+</button>
+</sc-for>
+<sc-for list="{{ clickSliders }}" as="s" hint-placeholder-count="2">
+<div style="background:#131b2e;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><span style="font-weight:600">{{ s.label }}</span><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#4cd7f6;background:#2d3449;padding:2px 10px;border-radius:6px">{{ s.text }}</span></div>
+<div style="color:#bcc9cd;font-size:14px">{{ s.hint }}</div>
+<div style="display:flex;align-items:center;gap:14px">
+<button onClick="{{ s.dec }}" aria-label="Disminuir" style="flex:none;width:56px;height:56px;border:0;cursor:pointer;border-radius:12px;background:#222a3d;color:#dae2fd" style-hover="background:#31394d"><span class="ms">remove</span></button>
+<input type="range" min="{{ s.min }}" max="{{ s.max }}" step="{{ s.step }}" value="{{ s.val }}" onChange="{{ s.onInput }}" style="flex:1;height:12px;cursor:pointer;min-width:0">
+<button onClick="{{ s.inc }}" aria-label="Aumentar" style="flex:none;width:56px;height:56px;border:0;cursor:pointer;border-radius:12px;background:#222a3d;color:#dae2fd" style-hover="background:#31394d"><span class="ms">add</span></button>
+</div></div>
+</sc-for>
+<sc-for list="{{ cfgToggles }}" as="t" hint-placeholder-count="2">
+<div style="background:#131b2e;border-radius:14px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px">
+<span style="display:flex;gap:12px;align-items:center"><span class="ms" style="color:{{ t.color }}">{{ t.icon }}</span><span><span style="display:block;font-weight:600;font-size:14px">{{ t.t }}</span><span style="display:block;font-size:13px;color:#bcc9cd">{{ t.d }}</span></span></span>
+<button onClick="{{ t.go }}" aria-pressed="{{ t.on }}" style="position:relative;flex:none;width:64px;height:40px;border:0;cursor:pointer;border-radius:99px;background:{{ t.bg }};transition:background .2s"><span style="position:absolute;top:4px;left:{{ t.left }};width:32px;height:32px;border-radius:50%;background:#00424f;color:#acedff;display:flex;align-items:center;justify-content:center;transition:left .2s"><span class="ms" style="font-size:16px">{{ t.knob }}</span></span></button>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="background:#222a3d;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center"><div><div style="font-size:20px;font-weight:600">Campo de Prueba Dinámico</div><div style="font-size:14px;color:#bcc9cd">Mueve y haz clic: el cursor virtual aplica filtro y modo de clic.</div></div>
+<div style="display:flex;gap:8px;font-family:'JetBrains Mono',monospace;font-size:12px"><span style="padding:4px 10px;background:#171f33;border-radius:6px;color:#4cd7f6">Modo: {{ clickModeName }}</span><span style="padding:4px 10px;background:#171f33;border-radius:6px;color:#4edea3">Clics: {{ sandClicks }}</span></div></div>
+<div onMouseMove="{{ sandMove }}" onMouseDown="{{ sandDown }}" style="position:relative;height:280px;background:#060e20;border-radius:14px;overflow:hidden;cursor:crosshair">
+<div style="position:absolute;left:50%;top:50%;width:{{ deadPx }}px;height:{{ deadPx }}px;margin:{{ deadMargin }}px 0 0 {{ deadMargin }}px;border-radius:50%;border:1px dashed rgba(76,215,246,.4);pointer-events:none"></div>
+<button onClick="{{ sandHit }}" style="position:absolute;left:40px;top:40px;width:120px;height:110px;border:0;cursor:pointer;border-radius:16px;background:#222a3d;color:#dae2fd;font-family:inherit;font-weight:600;font-size:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px" style-hover="background:#4cd7f6;color:#003640"><span class="ms" style="font-size:32px">touch_app</span>Objetivo A</button>
+<button onClick="{{ sandHit }}" style="position:absolute;right:50px;bottom:40px;width:140px;height:100px;border:0;cursor:pointer;border-radius:16px;background:#222a3d;color:#dae2fd;font-family:inherit;font-weight:600;font-size:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px" style-hover="background:#4edea3;color:#003824"><span class="ms" style="font-size:32px">check_circle</span>Objetivo B</button>
+<div style="position:absolute;left:{{ simX }}px;top:{{ simY }}px;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:rgba(76,215,246,.8);box-shadow:0 0 16px rgba(76,215,246,.8);pointer-events:none;transition:left {{ simLag }}ms,top {{ simLag }}ms"></div>
+<div style="position:absolute;left:{{ rippleX }}px;top:{{ rippleY }}px;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;background:rgba(76,215,246,.4);pointer-events:none;transform:scale({{ rippleScale }});opacity:{{ rippleOp }};transition:transform .35s,opacity .35s"></div>
+</div>
+</div>
+<div style="position:sticky;bottom:0;background:rgba(11,19,38,.94);backdrop-filter:blur(12px);border-radius:16px;padding:14px;display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-end;box-shadow:0 -8px 24px rgba(0,0,0,.4)">
+<button onClick="{{ resetCfg }}" style="min-height:56px;border:0;cursor:pointer;font-family:inherit;color:#dae2fd;background:#222a3d;border-radius:12px;padding:0 20px;font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px" style-hover="background:#2d3449"><span class="ms" style="color:#869397;font-size:20px">restart_alt</span>Restablecer</button>
+<button onClick="{{ saveCfg }}" style="min-height:64px;min-width:220px;border:0;cursor:pointer;font-family:inherit;color:#003640;background:{{ saveBg }};border-radius:12px;padding:0 28px;font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 0 24px rgba(76,215,246,.35)"><span class="ms">{{ saveIcon }}</span>{{ saveLabel }}</button>
+</div>
+</sc-if>
+
+<!-- ===== MAPEO ===== -->
+<sc-if value="{{ vMap }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between">
+<div style="max-width:700px"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;color:#4cd7f6">MOTOR ÓPTICO · MAPEO ACTIVO</div>
+<h1 style="margin:4px 0 0;font-size:30px;letter-spacing:-.02em">Biblioteca de Gestos y Comandos</h1>
+<p style="margin:6px 0 0;color:#bcc9cd;font-size:15px">Activa gestos y elige la acción de cada uno.</p></div>
+<div style="display:flex;padding:4px;background:#131b2e;border-radius:14px;gap:4px">
+<sc-for list="{{ phaseOpts }}" as="p" hint-placeholder-count="2"><button onClick="{{ p.go }}" style="min-height:56px;border:0;cursor:pointer;font-family:inherit;border-radius:10px;padding:0 18px;font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px;background:{{ p.bg }};color:{{ p.color }}"><span class="ms" style="font-size:20px">{{ p.icon }}</span>{{ p.t }}</button></sc-for>
+</div></div>
+<div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
+<div style="flex:1 1 520px;min-width:0;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="display:flex;gap:10px;align-items:center;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;letter-spacing:.06em">GESTOS RECONOCIBLES<span style="padding:2px 10px;border-radius:99px;background:rgba(76,215,246,.1);color:#4cd7f6;font-size:12px">{{ activeCount }}</span></span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px">
+<sc-for list="{{ gestures }}" as="g" hint-placeholder-count="6">
+<div style="background:{{ g.bg }};border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px;opacity:{{ g.op }};box-shadow:{{ g.shadow }};transition:box-shadow .3s,background .3s">
+<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+<div style="display:flex;gap:12px;align-items:center"><div style="width:44px;height:44px;border-radius:10px;background:#222a3d;color:{{ g.color }};display:flex;align-items:center;justify-content:center"><span class="ms">{{ g.icon }}</span></div><div><div style="font-weight:600;font-size:15px;line-height:1.2">{{ g.title }}</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#869397;margin-top:2px">{{ g.sub }}</div></div></div>
+<span style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 9px;border-radius:99px;background:{{ g.pillBg }};color:{{ g.pillColor }};white-space:nowrap;font-weight:600">{{ g.pill }}</span>
+</div>
+<button onClick="{{ g.cycle }}" title="Cambiar acción" style="border:0;cursor:pointer;font-family:inherit;text-align:left;background:#222a3d;color:#dae2fd;border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:48px" style-hover="background:#2d3449"><span style="font-size:12px;color:#bcc9cd">Acción</span><span style="display:flex;gap:6px;align-items:center;font-weight:600;font-size:13px;color:{{ g.color }}"><span class="ms" style="font-size:18px">{{ g.actIcon }}</span>{{ g.act }}<span class="ms" style="font-size:16px;color:#869397">sync_alt</span></span></button>
+<div style="display:flex;gap:8px">
+<button onClick="{{ g.test }}" style="flex:1;min-height:52px;border:0;cursor:pointer;font-family:inherit;border-radius:10px;background:#222a3d;color:#dae2fd;font-weight:600;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px" style-hover="background:#31394d"><span class="ms" style="font-size:20px;color:#4edea3">play_arrow</span>Probar</button>
+<button onClick="{{ g.toggle }}" aria-pressed="{{ g.on }}" style="flex:1;min-height:52px;border:0;cursor:pointer;font-family:inherit;border-radius:10px;background:{{ g.tBg }};color:{{ g.tColor }};font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px"><span class="ms" style="font-size:20px">{{ g.tIcon }}</span>{{ g.tText }}</button>
+</div>
+</div>
+</sc-for>
+</div>
+<sc-for list="{{ mapSliders }}" as="s" hint-placeholder-count="2">
+<div style="background:#131b2e;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><span style="font-weight:600">{{ s.label }}</span><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#4cd7f6;background:#2d3449;padding:2px 10px;border-radius:6px">{{ s.text }}</span></div>
+<div style="display:flex;align-items:center;gap:14px">
+<button onClick="{{ s.dec }}" aria-label="Disminuir" style="flex:none;width:56px;height:56px;border:0;cursor:pointer;border-radius:12px;background:#222a3d;color:#dae2fd" style-hover="background:#31394d"><span class="ms">remove</span></button>
+<input type="range" min="{{ s.min }}" max="{{ s.max }}" step="{{ s.step }}" value="{{ s.val }}" onChange="{{ s.onInput }}" style="flex:1;height:12px;cursor:pointer;min-width:0">
+<button onClick="{{ s.inc }}" aria-label="Aumentar" style="flex:none;width:56px;height:56px;border:0;cursor:pointer;border-radius:12px;background:#222a3d;color:#dae2fd" style-hover="background:#31394d"><span class="ms">add</span></button>
+</div></div>
+</sc-for>
+<div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;background:#131b2e;border-radius:14px;padding:14px">
+<div style="font-size:13px"><span style="color:#bcc9cd">Perfil activo:</span> <b style="color:#4cd7f6">Clínico_Quad_Defecto.json</b></div>
+<div style="display:flex;gap:10px"><button onClick="{{ restoreMap }}" style="min-height:56px;border:0;cursor:pointer;font-family:inherit;color:#dae2fd;background:#222a3d;border-radius:10px;padding:0 18px;font-weight:600;font-size:14px" style-hover="background:#2d3449">Restaurar valores</button>
+<button onClick="{{ saveMap }}" style="min-height:56px;border:0;cursor:pointer;font-family:inherit;color:#00424f;background:{{ saveMapBg }};border-radius:10px;padding:0 22px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px"><span class="ms" style="font-size:20px">{{ saveMapIcon }}</span>{{ saveMapLabel }}</button></div>
+</div>
+</div>
+<div style="flex:0 1 330px;min-width:270px;background:#131b2e;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px;position:sticky;top:0">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:18px;font-weight:700">Probador en Vivo</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 8px;border-radius:6px;background:#2d3449;color:#4cd7f6">HUD</span></div>
+<div onMouseMove="{{ feedMove }}" onMouseDown="{{ feedDown }}" onMouseUp="{{ feedUp }}" onMouseLeave="{{ feedUp }}" style="position:relative;aspect-ratio:16/10;background:#060e20;border-radius:12px;overflow:hidden;cursor:crosshair">
+<svg viewBox="0 0 1000 625" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:{{ feedOpacity }}">
+<path d="{{ hand.bones }}" stroke="#4cd7f6" stroke-width="5" stroke-linecap="round" fill="none" opacity=".8"></path>
+<path d="{{ hand.dots }}" stroke="#06b6d4" stroke-width="16" stroke-linecap="round" fill="none"></path>
+<path d="{{ hand.pinchLine }}" stroke="#4edea3" stroke-width="7" stroke-linecap="round" fill="none"></path>
+<path d="{{ hand.tipDot }}" stroke="{{ hand.tipColor }}" stroke-width="26" stroke-linecap="round" fill="none"></path>
+</svg>
+<div style="position:absolute;right:8px;top:8px;background:rgba(6,14,32,.9);padding:3px 10px;border-radius:99px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:#4edea3">{{ confLock }}</div>
+</div>
+<div style="background:#060e20;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px">
+<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#869397;letter-spacing:.06em">ÚLTIMO EVENTO</div>
+<div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span style="font-weight:600;font-size:15px">{{ lastEvent }}</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#4edea3;font-weight:600">{{ lastScore }}%</span></div>
+<div style="height:8px;background:#222a3d;border-radius:99px;overflow:hidden"><div style="height:100%;width:{{ lastScore }}%;background:#4edea3;transition:width .3s"></div></div></div>
+<div style="font-size:12px;color:#bcc9cd">Zona Dwell — mantén el cursor {{ dwell }} s:</div>
+<div onMouseEnter="{{ dwellTestStart }}" onMouseLeave="{{ dwellTestCancel }}" style="position:relative;min-height:64px;border-radius:12px;background:{{ dwellTestBg }};overflow:hidden;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:14px;cursor:pointer">
+<div style="position:absolute;left:0;top:0;bottom:0;width:{{ dwellTestW }};background:rgba(76,215,246,.25);transition:width {{ dwellTestDur }}ms linear"></div>
+<span class="ms" style="color:#4cd7f6;position:relative">my_location</span><span style="position:relative">{{ dwellTestText }}</span></div>
+</div>
+</div>
+</sc-if>
+
+<!-- ===== LAB ===== -->
+<sc-if value="{{ vLab }}" hint-placeholder-val="{{ false }}">
+<div style="max-width:760px"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;color:#4cd7f6">MÓDULO CLÍNICO · LAB-PROTOCOLO #094</div>
+<h1 style="margin:4px 0 0;font-size:30px;letter-spacing:-.02em">Asistente de Calibración y Entrenamiento</h1>
+<p style="margin:6px 0 0;color:#bcc9cd;font-size:15px">Sintoniza la iluminación y entrena la puntería con dwell.</p></div>
+<div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
+<div style="flex:1 1 320px;background:#171f33;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="display:flex;gap:10px;align-items:center;font-size:19px;font-weight:600"><span class="ms" style="color:#4cd7f6">light_mode</span>Iluminación y Cámara</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;background:{{ luxPillBg }};color:{{ luxColor }}">{{ luxState }}</span></div>
+<div style="background:#131b2e;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#869397">LUMINOSIDAD ACTUAL</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#4edea3">Rango: 100–1000 lux</span></div>
+<div style="font-family:'JetBrains Mono',monospace;font-size:44px;font-weight:700;color:{{ luxColor }}">{{ lux }}<span style="font-size:16px;color:#bcc9cd"> lux</span></div>
+<div style="position:relative;height:14px;border-radius:99px;background:linear-gradient(90deg,#c98c8c 0%,#c98c8c 6%,#4edea3 6%,#4edea3 66%,#93000a 66%);"><div style="position:absolute;top:-4px;left:{{ luxPos }}%;width:6px;height:22px;margin-left:-3px;border-radius:3px;background:#fff;transition:left .3s"></div></div>
+<input type="range" min="0" max="1500" step="10" value="{{ lux }}" onChange="{{ setLux }}" aria-label="Simular iluminación" style="width:100%;height:12px;cursor:pointer">
+</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<sc-for list="{{ labTele }}" as="t" hint-placeholder-count="3"><div style="flex:1 1 120px;background:#131b2e;border-radius:10px;padding:10px 12px"><div style="font-size:12px;color:#869397">{{ t.l }}</div><div style="font-family:'JetBrains Mono',monospace;font-weight:600;color:#4cd7f6;font-size:14px">{{ t.v }}</div></div></sc-for>
+</div>
+<button onClick="{{ autoCal }}" style="min-height:60px;border:0;cursor:pointer;font-family:inherit;border-radius:12px;background:#4cd7f6;color:#003640;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;gap:10px"><span class="ms">{{ calIcon }}</span>{{ calLabel }}</button>
+</div>
+<div style="flex:1.5 1 420px;background:#171f33;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:16px;min-width:0">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><span style="display:flex;gap:10px;align-items:center;font-size:19px;font-weight:600"><span class="ms" style="color:#4cd7f6">target</span>Laboratorio de Puntería</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;padding:4px 10px;background:#0b1326;border-radius:6px;color:#4cd7f6">Dwell {{ dwell }} s</span></div>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<sc-for list="{{ labStats }}" as="t" hint-placeholder-count="3"><div style="flex:1 1 110px;background:#131b2e;border-radius:10px;padding:12px;text-align:center"><div style="font-size:12px;color:#869397">{{ t.l }}</div><div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:{{ t.c }}">{{ t.v }}</div></div></sc-for>
+</div>
+<div onClick="{{ labMiss }}" style="position:relative;height:300px;background:#060e20;border-radius:14px;overflow:hidden">
+<sc-for list="{{ labTargets }}" as="t" hint-placeholder-count="5">
+<div onMouseEnter="{{ t.enter }}" onMouseLeave="{{ t.leave }}" onClick="{{ t.click }}" style="position:absolute;left:{{ t.x }};top:{{ t.y }};width:{{ t.size }}px;height:{{ t.size }}px;margin:-{{ t.half }}px 0 0 -{{ t.half }}px;border-radius:50%;background:#171f33;border:2px solid {{ t.border }};overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;box-shadow:0 0 18px {{ t.glow }}">
+<div style="position:absolute;left:0;right:0;bottom:0;height:{{ t.fill }};background:rgba(76,215,246,.35);transition:height {{ t.dur }}ms linear"></div>
+<span class="ms" style="position:relative;color:{{ t.border }}">{{ t.icon }}</span><span style="position:relative;font-family:'JetBrains Mono',monospace;font-size:11px;color:#bcc9cd">{{ t.size }}px</span></div>
+</sc-for>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-size:13px;color:#bcc9cd;display:flex;gap:8px;align-items:center"><span class="ms" style="color:#4edea3;font-size:20px">check_circle</span>{{ labMsg }}</span>
+<button onClick="{{ labReset }}" style="min-height:56px;border:0;cursor:pointer;font-family:inherit;color:#dae2fd;background:#222a3d;border-radius:12px;padding:0 20px;font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px" style-hover="background:#2d3449"><span class="ms" style="font-size:20px">restart_alt</span>Reiniciar práctica</button></div>
+</div>
+</div>
+<div><h2 style="margin:0 0 14px;font-size:22px;display:flex;gap:10px;align-items:center"><span class="ms" style="color:#4cd7f6">accessibility_new</span>Guía Rápida de Posturas</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+<sc-for list="{{ posture }}" as="p" hint-placeholder-count="3"><div style="background:#131b2e;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:10px"><div style="display:flex;justify-content:space-between;align-items:center"><span class="ms" style="color:#4cd7f6">{{ p.icon }}</span><span style="font-family:'JetBrains Mono',monospace;color:#4edea3;font-weight:600;font-size:14px">{{ p.v }}</span></div><div style="font-size:17px;font-weight:600">{{ p.t }}</div><div style="font-size:14px;color:#bcc9cd;line-height:1.5">{{ p.d }}</div></div></sc-for>
+</div></div>
+</sc-if>
+
+<!-- ===== ROADMAP ===== -->
+<sc-if value="{{ vRoad }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between">
+<div style="max-width:700px"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;color:#4cd7f6">DESARROLLO NEURO-ERGONÓMICO</div>
+<h1 style="margin:4px 0 0;font-size:30px;letter-spacing:-.02em">Evolución del Proyecto GestureFlow</h1>
+<p style="margin:6px 0 0;color:#bcc9cd;font-size:15px">Comparativa entre el prototipo actual y el despliegue optimizado.</p></div>
+<div style="display:flex;padding:4px;background:#131b2e;border-radius:12px;gap:4px">
+<sc-for list="{{ roadTabs }}" as="r" hint-placeholder-count="3"><button onClick="{{ r.go }}" style="min-height:48px;border:0;cursor:pointer;font-family:inherit;border-radius:9px;padding:0 16px;font-weight:600;font-size:13px;background:{{ r.bg }};color:{{ r.color }}">{{ r.t }}</button></sc-for>
+</div></div>
+<div style="display:flex;flex-wrap:wrap;gap:16px">
+<div style="flex:1 1 300px;background:#171f33;border-radius:16px;padding:20px;opacity:{{ f1op }};transition:opacity .25s"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#4edea3;font-weight:600">● FASE 1: MVP FUNCIONAL</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 8px;border-radius:6px;background:rgba(27,189,133,.2);color:#4edea3">IMPLEMENTADO</span></div><p style="font-size:14px;color:#bcc9cd;line-height:1.5;margin:10px 0 0">Pila monocanal en C++ con Win32 API directa. Telemetría calibrada para validación clínica.</p></div>
+<div style="flex:1 1 300px;background:#171f33;border-radius:16px;padding:20px;opacity:{{ f2op }};transition:opacity .25s"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#4cd7f6;font-weight:600">● FASE 2: ALCANCE PRO</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 8px;border-radius:6px;background:#2d3449;color:#adc6ff">HOJA DE RUTA</span></div><p style="font-size:14px;color:#bcc9cd;line-height:1.5;margin:10px 0 0">Motor multimodelo con aceleración Vulkan/DirectML y reconocimiento de micromovimientos.</p></div>
+</div>
+<h2 style="margin:0;font-size:22px">Métricas Técnicas y SLA</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
+<sc-for list="{{ roadMetrics }}" as="m" hint-placeholder-count="6">
+<div style="background:#171f33;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;color:#869397">{{ m.k }}</span><span class="ms" style="color:#4cd7f6;font-size:20px">{{ m.icon }}</span></div>
+<div style="font-size:18px;font-weight:600">{{ m.t }}</div>
+<div style="opacity:{{ f1op }};transition:opacity .25s"><div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:12px;margin-bottom:4px"><span style="color:#4edea3">F1</span><span>{{ m.f1 }}</span></div><div style="height:8px;background:#2d3449;border-radius:99px"><div style="height:100%;width:{{ m.p1 }}%;background:#4edea3;border-radius:99px"></div></div></div>
+<div style="opacity:{{ f2op }};transition:opacity .25s"><div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:12px;margin-bottom:4px"><span style="color:#4cd7f6">F2 Pro</span><span>{{ m.f2 }}</span></div><div style="height:8px;background:#2d3449;border-radius:99px"><div style="height:100%;width:{{ m.p2 }}%;background:#4cd7f6;border-radius:99px"></div></div></div>
+</div>
+</sc-for>
+</div>
+<h2 style="margin:0;font-size:22px">Matriz de Capacidades</h2>
+<div style="background:#131b2e;border-radius:16px;overflow:hidden">
+<div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:14px;padding:14px 20px;background:#171f33;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em"><span style="color:#869397">MÓDULO</span><span style="color:#4edea3;opacity:{{ f1op }}">FASE 1 (ACTUAL)</span><span style="color:#4cd7f6;opacity:{{ f2op }}">FASE 2 (PRO)</span></div>
+<sc-for list="{{ matrix }}" as="r" hint-placeholder-count="5"><div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:14px;padding:16px 20px;border-top:1px solid #1e293b;font-size:13px;align-items:center"><span><b style="display:block;font-size:14px">{{ r.t }}</b><span style="color:#869397">{{ r.d }}</span></span><span style="opacity:{{ f1op }};color:{{ r.c1 }}">{{ r.f1 }}</span><span style="opacity:{{ f2op }};color:#adc6ff">{{ r.f2 }}</span></div></sc-for>
+</div>
+<div style="background:#171f33;border-radius:16px;padding:24px;display:flex;flex-wrap:wrap;gap:24px">
+<div style="flex:1 1 280px"><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#adc6ff;letter-spacing:.06em">PROGRAMA PILOTO EXCLUSIVO</div><h3 style="margin:6px 0 8px;font-size:24px">¿Deseas probar la Fase 2 Pro?</h3><p style="margin:0;color:#bcc9cd;font-size:14px;line-height:1.5">Inscríbete en el programa de retroalimentación clínica para terapeutas, ingenieros y usuarios.</p></div>
+<sc-if value="{{ betaSent }}" hint-placeholder-val="{{ false }}"><div style="flex:1 1 300px;background:#131b2e;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:8px;align-items:flex-start;justify-content:center"><span class="ms" style="color:#4edea3;font-size:36px">task_alt</span><b style="font-size:18px">Solicitud enviada</b><span style="color:#bcc9cd;font-size:14px">{{ betaMsg }}</span><button onClick="{{ betaReset }}" style="margin-top:6px;min-height:48px;border:0;cursor:pointer;font-family:inherit;color:#dae2fd;background:#222a3d;border-radius:10px;padding:0 16px;font-weight:600">Enviar otra</button></div></sc-if>
+<sc-if value="{{ betaOpen }}" hint-placeholder-val="{{ true }}"><div style="flex:1 1 300px;background:#131b2e;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:10px">
+<input type="text" placeholder="Nombre o institución" value="{{ betaName }}" onChange="{{ setBetaName }}" style="min-height:48px;box-sizing:border-box;border-radius:8px;border:1px solid #3d494c;background:#0b1326;color:#dae2fd;padding:0 12px;font-family:inherit;font-size:14px">
+<input type="email" placeholder="correo@organizacion.org" value="{{ betaEmail }}" onChange="{{ setBetaEmail }}" style="min-height:48px;box-sizing:border-box;border-radius:8px;border:1px solid #3d494c;background:#0b1326;color:#dae2fd;padding:0 12px;font-family:inherit;font-size:14px">
+<button onClick="{{ cycleRole }}" style="min-height:48px;text-align:left;border-radius:8px;border:1px solid #3d494c;background:#0b1326;color:#dae2fd;padding:0 12px;font-family:inherit;font-size:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center">{{ betaRole }}<span class="ms" style="font-size:18px;color:#869397">unfold_more</span></button>
+<div style="font-size:12px;color:#ffb4ab;min-height:16px">{{ betaErr }}</div>
+<button onClick="{{ sendBeta }}" style="min-height:56px;border:0;cursor:pointer;font-family:inherit;color:#003640;background:#4cd7f6;border-radius:10px;font-weight:700;font-size:15px">Solicitar acceso a Fase 2 Beta</button></div></sc-if>
+</div>
+</sc-if>
+
+</main>
+</div>
+<div style="height:32px;flex:none;background:#060e20;border-top:1px solid #1e293b;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#bcc9cd"><span style="display:flex;gap:8px;align-items:center"><span style="width:8px;height:8px;border-radius:50%;background:{{ statusDot }}"></span>Cámara HD conectada · <span style="color:#4cd7f6">F9 pausa · Esc cierra menús</span></span><span style="color:#4edea3">{{ engineTag }}</span></div>
+</div>
+</sc-if>
+
+<!-- ACTION BAR -->
+<sc-if value="{{ actions }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;right:20px;top:20px;bottom:68px;width:390px;background:rgba(15,23,42,.97);border:1px solid rgba(76,215,246,.25);border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,.7);display:flex;flex-direction:column;gap:10px;padding:16px;z-index:40;overflow:auto">
+<div style="display:flex;justify-content:space-between;align-items:center"><div style="display:flex;gap:10px;align-items:center"><span class="ms" style="color:#4cd7f6;background:#171f33;border-radius:10px;padding:8px">gesture</span><div><div style="font-weight:700;font-size:14px;font-family:'JetBrains Mono',monospace">GESTUREFLOW</div><div style="font-size:11px;color:#4cd7f6;font-family:'JetBrains Mono',monospace">HUD V3.2 · ACCIONES</div></div></div>
+<button onClick="{{ toggleActions }}" aria-label="Cerrar" style="border:0;background:#171f33;color:#dae2fd;width:44px;height:44px;border-radius:10px;cursor:pointer"><span class="ms" style="font-size:20px">close</span></button></div>
+<div style="background:#171f33;border-radius:12px;padding:10px 14px"><div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:12px"><span>{{ armText }}</span><span style="color:#4cd7f6">{{ dwell }} s</span></div><div style="height:8px;background:#2d3449;border-radius:99px;margin-top:8px;overflow:hidden"><div style="height:100%;width:{{ armW }};background:#4cd7f6;transition:width {{ armDur }}ms linear"></div></div></div>
+<sc-for list="{{ actionItems }}" as="a" hint-placeholder-count="7">
+<button onClick="{{ a.go }}" style="border:0;cursor:pointer;font-family:inherit;text-align:left;min-height:68px;border-radius:14px;padding:0 14px;display:flex;align-items:center;gap:14px;background:{{ a.bg }};color:{{ a.color }}" style-hover="filter:brightness(1.15)">
+<span class="ms" style="font-size:28px;background:rgba(0,0,0,.18);border-radius:10px;padding:8px">{{ a.icon }}</span>
+<span style="flex:1"><span style="display:block;font-size:17px;font-weight:600">{{ a.t }}</span><span style="display:block;font-size:12px;font-family:'JetBrains Mono',monospace;opacity:.85">{{ a.d }}</span></span>
+<span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700">{{ a.tag }}</span></button>
+</sc-for>
+<div style="background:#171f33;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px"><div style="font-size:13px;font-weight:600;color:#4edea3;font-family:'JetBrains Mono',monospace">Sugerencia ergonómica</div><div style="font-size:13px;color:#bcc9cd">Tono muscular óptimo. Micro-pausa sugerida en 11 min.</div></div>
+</div>
+</sc-if>
+
+<!-- FLOATING HUD -->
+<sc-if value="{{ hud }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:50%;top:40px;width:760px;max-width:calc(100% - 40px);transform:translateX(-50%);background:rgba(23,31,51,.97);border:1px solid rgba(76,215,246,.2);border-radius:22px;box-shadow:0 24px 50px rgba(0,0,0,.7);padding:22px;z-index:41;display:flex;flex-direction:column;gap:16px;max-height:calc(100% - 110px);overflow:auto">
+<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div style="display:flex;gap:12px;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:{{ statusDot }}"></span><div><div style="font-size:24px;font-weight:700">GestureFlow HUD</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#869397">NEURO-ADAPTIVE OVERLAY v3.4.1</div></div></div>
+<div style="display:flex;gap:8px;font-family:'JetBrains Mono',monospace;font-size:12px;align-items:center"><span style="padding:5px 10px;background:#222a3d;border-radius:99px">±{{ tol }}px</span><span style="padding:5px 10px;background:#222a3d;border-radius:99px">{{ fpsInt }} FPS</span><span style="padding:5px 10px;background:#222a3d;border-radius:99px">{{ luxInt }} lx</span>
+<button onClick="{{ toggleHud }}" aria-label="Cerrar" style="border:0;background:#222a3d;color:#dae2fd;width:44px;height:44px;border-radius:10px;cursor:pointer"><span class="ms" style="font-size:20px">close</span></button></div></div>
+<div style="display:flex;flex-wrap:wrap;gap:16px">
+<div onMouseMove="{{ feedMove }}" onMouseDown="{{ feedDown }}" onMouseUp="{{ feedUp }}" onMouseLeave="{{ feedUp }}" style="flex:1 1 280px;position:relative;aspect-ratio:16/10;background:#060e20;border-radius:14px;overflow:hidden;cursor:crosshair">
+<svg viewBox="0 0 1000 625" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:{{ feedOpacity }}"><path d="{{ hand.bones }}" stroke="#4cd7f6" stroke-width="5" stroke-linecap="round" fill="none" opacity=".8"></path><path d="{{ hand.dots }}" stroke="#06b6d4" stroke-width="16" stroke-linecap="round" fill="none"></path><path d="{{ hand.pinchLine }}" stroke="#4edea3" stroke-width="7" stroke-linecap="round" fill="none"></path><path d="{{ hand.tipDot }}" stroke="{{ hand.tipColor }}" stroke-width="26" stroke-linecap="round" fill="none"></path></svg>
+<span style="position:absolute;right:8px;top:8px;background:rgba(6,14,32,.9);padding:3px 10px;border-radius:99px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:#4edea3">{{ confLock }}</span></div>
+<div style="flex:1 1 280px;display:flex;flex-direction:column;gap:10px">
+<div style="background:#131b2e;border-radius:12px;padding:12px 14px"><div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:12px"><span style="color:#869397">GESTO DETECTADO</span><span style="color:#4cd7f6;font-weight:600">{{ pinchText }}</span></div><div style="height:8px;background:#2d3449;border-radius:99px;margin:8px 0;overflow:hidden"><div style="height:100%;width:{{ pressure }}%;background:#3b82f6;transition:width .2s"></div></div><div style="display:flex;justify-content:space-between;font-size:13px"><span>Presión de pellizco</span><span style="font-family:'JetBrains Mono',monospace">{{ pressure }}%</span></div></div>
+<div style="background:#131b2e;border-radius:12px;padding:8px 8px 8px 14px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:14px">Mano activa<div style="display:flex;gap:4px;background:#0b1326;padding:4px;border-radius:10px"><sc-for list="{{ handOpts }}" as="h" hint-placeholder-count="2"><button onClick="{{ h.go }}" style="border:0;cursor:pointer;font-family:'JetBrains Mono',monospace;border-radius:7px;height:40px;padding:0 14px;font-size:13px;background:{{ h.bg }};color:{{ h.color }}">{{ h.t }}</button></sc-for></div></div>
+<div style="background:#131b2e;border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:14px">Suavizado neuromotor</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#869397">Filtro Kalman</div></div><button onClick="{{ toggleFilter }}" style="border:0;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;padding:8px 12px;border-radius:8px;min-height:44px;background:{{ filterChipBg }};color:{{ filterChipColor }}">{{ filterChip }}</button></div>
+</div></div>
+<div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#869397;letter-spacing:.06em;margin-bottom:8px">ACCIÓN GESTUAL PRIMARIA</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+<sc-for list="{{ hudActions }}" as="a" hint-placeholder-count="4"><button onClick="{{ a.go }}" style="min-height:74px;border:0;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:{{ a.bg }};color:{{ a.color }}"><span class="ms">{{ a.icon }}</span>{{ a.t }}</button></sc-for></div></div>
+<div style="display:flex;flex-wrap:wrap;gap:12px;background:#131b2e;border-radius:14px;padding:12px;align-items:center">
+<button onClick="{{ recenter }}" style="flex:1 1 150px;min-height:64px;border:0;cursor:pointer;font-family:inherit;color:#dae2fd;background:#222a3d;border-radius:10px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px"><span class="ms" style="color:#4cd7f6">filter_center_focus</span>Recentrar</button>
+<div style="display:flex;align-items:center;gap:8px"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#869397">SENS.</span><button onClick="{{ sensDec }}" aria-label="Menos" style="width:56px;height:56px;border:0;border-radius:10px;background:#222a3d;color:#dae2fd;cursor:pointer"><span class="ms">remove</span></button><span style="font-family:'JetBrains Mono',monospace;color:#4cd7f6;min-width:44px;text-align:center">{{ sens }}/10</span><button onClick="{{ sensInc }}" aria-label="Más" style="width:56px;height:56px;border:0;border-radius:10px;background:#222a3d;color:#dae2fd;cursor:pointer"><span class="ms">add</span></button></div>
+<button onClick="{{ toggleTracking }}" style="flex:1 1 150px;min-height:64px;border:0;cursor:pointer;font-family:inherit;color:{{ hudPauseColor }};background:{{ hudPauseBg }};border-radius:10px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px"><span class="ms">{{ pauseIcon }}</span>{{ hudPauseText }}</button></div>
+</div>
+</sc-if>
+
+<!-- ON-SCREEN KEYBOARD -->
+<sc-if value="{{ kbd }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:16px;right:16px;top:16px;bottom:64px;z-index:42;display:flex;flex-direction:column;gap:12px">
+<div style="flex:1;min-height:110px;background:#0b1326;border:1px solid #1e293b;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.6);display:flex;flex-direction:column;overflow:hidden">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 18px;background:#131b2e;font-family:'JetBrains Mono',monospace;font-size:12px"><span style="display:flex;gap:10px;align-items:center"><span class="ms" style="color:#4cd7f6;font-size:20px">edit_note</span>Borrador_Tesis_Accesibilidad.txt <span style="padding:2px 8px;border-radius:6px;background:rgba(27,189,133,.2);color:#4edea3">SYNC ACTIVO</span></span><span style="color:#bcc9cd">{{ wordCount }} palabras · {{ ppm }}</span></div>
+<div style="flex:1;overflow:auto;padding:18px 24px;font-size:22px;line-height:1.55">{{ text }}<span style="display:inline-block;width:2px;height:1.1em;background:#4cd7f6;vertical-align:text-bottom;margin-left:1px"></span></div></div>
+<div style="background:#0b1326;border:1px solid #1e293b;border-radius:16px;padding:14px;box-shadow:0 20px 40px rgba(0,0,0,.6);display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;display:flex;gap:12px;align-items:center"><span style="padding:8px 12px;border-radius:8px;background:rgba(76,215,246,.12);color:#4cd7f6;font-weight:600">● DWELL ENGINE</span><span style="color:#bcc9cd">Dwell: {{ dwellMs }} ms · Modo {{ clickModeName }}</span></span>
+<div style="display:flex;gap:8px"><button onClick="{{ kbdDwellToggle }}" style="min-height:48px;border:0;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12px;color:#dae2fd;background:#171f33;border-radius:10px;padding:0 14px">Alternar dwell / pellizco</button><button onClick="{{ toggleKbd }}" style="min-height:48px;border:0;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12px;color:#dae2fd;background:#171f33;border-radius:10px;padding:0 14px;display:flex;align-items:center;gap:6px"><span class="ms" style="font-size:18px">keyboard_hide</span>Ocultar</button></div></div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"><sc-for list="{{ suggestions }}" as="s" hint-placeholder-count="4"><button onClick="{{ s.go }}" style="min-height:56px;border:0;cursor:pointer;font-family:inherit;text-align:left;padding:0 16px;border-radius:12px;background:#171f33;color:{{ s.color }};font-size:20px;font-weight:600" style-hover="background:#222a3d">{{ s.w }}</button></sc-for></div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;gap:8px"><sc-for list="{{ kRow1 }}" as="k" hint-placeholder-count="10"><button onClick="{{ k.go }}" style="flex:1;min-height:60px;border:0;cursor:pointer;font-family:inherit;border-radius:10px;background:#171f33;color:#dae2fd;font-size:22px;font-weight:600" style-hover="background:#2d3449" style-active="background:#4cd7f6;color:#003640">{{ k.l }}</button></sc-for></div>
+<div style="display:flex;gap:8px;padding:0 3%"><sc-for list="{{ kRow2 }}" as="k" hint-placeholder-count="10"><button onClick="{{ k.go }}" style="flex:1;min-height:60px;border:0;cursor:pointer;font-family:inherit;border-radius:10px;background:#171f33;color:#dae2fd;font-size:22px;font-weight:600" style-hover="background:#2d3449" style-active="background:#4cd7f6;color:#003640">{{ k.l }}</button></sc-for></div>
+<div style="display:flex;gap:8px"><button onClick="{{ shiftKey }}" aria-pressed="{{ shift }}" style="flex:1.2;min-height:60px;border:0;cursor:pointer;border-radius:10px;background:{{ shiftBg }};color:{{ shiftColor }}"><span class="ms">shift</span></button><sc-for list="{{ kRow3 }}" as="k" hint-placeholder-count="7"><button onClick="{{ k.go }}" style="flex:1;min-height:60px;border:0;cursor:pointer;font-family:inherit;border-radius:10px;background:#171f33;color:#dae2fd;font-size:22px;font-weight:600" style-hover="background:#2d3449" style-active="background:#4cd7f6;color:#003640">{{ k.l }}</button></sc-for><button onClick="{{ delWord }}" style="flex:2.2;min-height:60px;border:0;cursor:pointer;font-family:inherit;border-radius:10px;background:#3a0a10;color:#ffdad6;font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px"><span class="ms">backspace</span>Borrar palabra</button></div>
+<div style="display:flex;gap:8px"><button onClick="{{ symKey }}" style="flex:1.6;min-height:60px;border:0;cursor:pointer;font-family:inherit;border-radius:10px;background:#222a3d;color:#dae2fd;font-weight:600;font-size:14px">{{ symLabel }}</button><button onClick="{{ typeComma }}" style="flex:.6;min-height:60px;border:0;cursor:pointer;border-radius:10px;background:#171f33;color:#dae2fd;font-size:22px">,</button><button onClick="{{ typeSpace }}" style="flex:5;min-height:60px;border:0;cursor:pointer;font-family:'JetBrains Mono',monospace;border-radius:10px;background:#171f33;color:#4cd7f6;font-weight:600;font-size:16px;letter-spacing:.1em">ESPACIO RÁPIDO</button><button onClick="{{ typePeriod }}" style="flex:.6;min-height:60px;border:0;cursor:pointer;border-radius:10px;background:#171f33;color:#dae2fd;font-size:22px">.</button><button onClick="{{ typeEnter }}" style="flex:1.6;min-height:60px;border:0;cursor:pointer;font-family:inherit;border-radius:10px;background:#0d4a34;color:#6ffbbe;font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center;gap:6px">Intro<span class="ms">keyboard_return</span></button></div>
+</div></div>
+</div>
+</sc-if>
+
+<!-- TRAY QUICK MENU -->
+<sc-if value="{{ tray }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;right:16px;bottom:64px;width:440px;max-width:calc(100% - 32px);background:rgba(15,23,42,.97);border:1px solid rgba(76,215,246,.2);border-radius:20px;box-shadow:0 24px 50px rgba(0,0,0,.75);padding:18px;z-index:60;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:center"><div style="display:flex;gap:12px;align-items:center"><span class="ms" style="color:#4cd7f6;background:#222a3d;border-radius:10px;padding:8px">sensors</span><div><div style="font-weight:700;font-family:'JetBrains Mono',monospace">GESTUREFLOW <span style="font-size:11px;color:#4cd7f6;background:#171f33;padding:1px 6px;border-radius:4px">v3.42</span></div><div style="font-size:12px;color:{{ statusDot }}">{{ trayStatus }}</div></div></div>
+<button onClick="{{ toggleTracking }}" aria-pressed="{{ tracking }}" aria-label="Activar seguimiento" style="position:relative;width:72px;height:44px;border:0;cursor:pointer;border-radius:99px;background:{{ trkSwitchBg }};transition:background .2s"><span style="position:absolute;top:4px;left:{{ trkSwitchLeft }};width:36px;height:36px;border-radius:50%;background:#dae2fd;display:flex;align-items:center;justify-content:center;color:#0b1326;transition:left .2s"><span class="ms" style="font-size:18px">{{ trkSwitchIcon }}</span></span></button></div>
+<div style="display:flex;gap:8px"><sc-for list="{{ trayTele }}" as="t" hint-placeholder-count="3"><div style="flex:1;background:#171f33;border-radius:10px;padding:8px 10px"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#869397">{{ t.l }}</div><div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:{{ t.c }}">{{ t.v }}</div></div></sc-for></div>
+<sc-for list="{{ traySliders }}" as="s" hint-placeholder-count="2">
+<div style="background:#171f33;border-radius:12px;padding:10px 12px"><div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:13px;margin-bottom:6px"><span>{{ s.label }}</span><span style="color:#4cd7f6">{{ s.text }}</span></div>
+<div style="display:flex;gap:10px;align-items:center"><button onClick="{{ s.dec }}" aria-label="Menos" style="width:48px;height:48px;border:0;border-radius:10px;background:#2d3449;color:#dae2fd;cursor:pointer"><span class="ms">remove</span></button><input type="range" min="{{ s.min }}" max="{{ s.max }}" step="{{ s.step }}" value="{{ s.val }}" onChange="{{ s.onInput }}" style="flex:1;cursor:pointer;min-width:0"><button onClick="{{ s.inc }}" aria-label="Más" style="width:48px;height:48px;border:0;border-radius:10px;background:#2d3449;color:#dae2fd;cursor:pointer"><span class="ms">add</span></button></div></div>
+</sc-for>
+<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#869397;letter-spacing:.08em">MODO OPERATIVO INMEDIATO</div>
+<div style="display:flex;gap:8px"><sc-for list="{{ modeOpts }}" as="m" hint-placeholder-count="3"><button onClick="{{ m.go }}" style="flex:1;min-height:64px;border:0;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:{{ m.bg }};color:{{ m.color }}"><span class="ms" style="font-size:22px">{{ m.icon }}</span>{{ m.t }}</button></sc-for></div>
+<div style="display:flex;gap:8px"><button onClick="{{ goLab }}" style="flex:1;min-height:56px;border:0;cursor:pointer;font-family:inherit;color:#dae2fd;background:#222a3d;border-radius:10px;font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px"><span class="ms" style="color:#4cd7f6;font-size:20px">tune</span>Recalibrar</button><button onClick="{{ toggleTracking }}" style="flex:1;min-height:56px;border:0;cursor:pointer;font-family:inherit;color:#ffb4ab;background:#3a0a10;border-radius:10px;font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px"><span class="ms" style="font-size:20px">{{ pauseIcon }}</span>{{ trayFreeze }}</button></div>
+<div style="display:flex;justify-content:space-between"><button onClick="{{ openSuite }}" style="min-height:44px;border:0;background:transparent;color:#bcc9cd;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12px;display:flex;gap:6px;align-items:center"><span class="ms" style="font-size:16px">open_in_new</span>Abrir suite completa</button><button onClick="{{ closeTray }}" style="min-height:44px;border:0;background:transparent;color:#bcc9cd;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12px;display:flex;gap:6px;align-items:center"><span class="ms" style="font-size:16px">close</span>Minimizar a bandeja</button></div>
+</div>
+</sc-if>
+
+<!-- TASKBAR -->
+<div style="position:absolute;left:0;right:0;bottom:0;height:52px;background:rgba(6,14,32,.96);backdrop-filter:blur(20px);border-top:1px solid #1e293b;display:flex;align-items:center;justify-content:space-between;padding:0 12px;z-index:70">
+<div style="display:flex;align-items:center;gap:6px">
+<button aria-label="Inicio" onClick="{{ toastStart }}" style="width:44px;height:44px;border:0;border-radius:8px;background:transparent;color:#4cd7f6;cursor:pointer" style-hover="background:#171f33"><span class="ms">grid_view</span></button>
+<button aria-label="Buscar" onClick="{{ toastSearch }}" style="width:44px;height:44px;border:0;border-radius:8px;background:transparent;color:#dae2fd;cursor:pointer" style-hover="background:#171f33"><span class="ms">search</span></button>
+<div style="width:1px;height:26px;background:#2d3449;margin:0 4px"></div>
+<button aria-label="GestureFlow" onClick="{{ toggleWin }}" style="position:relative;width:48px;height:44px;border:0;border-radius:8px;background:{{ tbWinBg }};color:#4cd7f6;cursor:pointer" style-hover="background:#222a3d"><span class="ms">gesture</span><span style="position:absolute;left:16px;right:16px;bottom:2px;height:3px;border-radius:2px;background:#4cd7f6"></span></button>
+<sc-for list="{{ taskbarTools }}" as="t" hint-placeholder-count="3"><button aria-label="{{ t.t }}" title="{{ t.t }}" onClick="{{ t.go }}" style="position:relative;width:44px;height:44px;border:0;border-radius:8px;background:{{ t.bg }};color:#dae2fd;cursor:pointer" style-hover="background:#222a3d"><span class="ms">{{ t.icon }}</span></button></sc-for>
+</div>
+<div style="display:flex;align-items:center;gap:6px">
+<button aria-label="Bandeja GestureFlow" onClick="{{ toggleTray }}" style="position:relative;width:48px;height:44px;border:0;border-radius:8px;background:{{ trayBtnBg }};color:#4cd7f6;cursor:pointer" style-hover="background:#222a3d"><span class="ms">pan_tool</span><span style="position:absolute;right:8px;top:8px;width:8px;height:8px;border-radius:50%;background:{{ statusDot }}"></span></button>
+<div style="display:flex;gap:10px;align-items:center;padding:0 8px;color:#dae2fd"><span class="ms" style="font-size:20px">wifi</span><span class="ms" style="font-size:20px">volume_up</span><span class="ms" style="font-size:20px">battery_full</span></div>
+<div style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.3;padding:0 6px"><div>{{ clockTime }}</div><div style="color:#869397">{{ clockDate }}</div></div>
+</div></div>
+
+<!-- toast -->
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:50%;bottom:72px;transform:translateX(-50%);background:#dae2fd;color:#0b1326;padding:12px 20px;border-radius:12px;font-weight:600;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.5);z-index:80;display:flex;gap:10px;align-items:center"><span class="ms" style="color:#00687a;font-size:20px">info</span>{{ toast }}</div>
+</sc-if>
+<div id="gf-ring" style="position:fixed;left:0;top:0;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;pointer-events:none;z-index:9999;display:none"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;mon&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;mon&quot;,&quot;cfg&quot;,&quot;map&quot;,&quot;lab&quot;,&quot;road&quot;],&quot;section&quot;:&quot;Inicio&quot;},&quot;startOverlays&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Inicio&quot;}}">
+class Component extends DCLogic {
+  state = {
+    view: 'mon', winOpen: true, winMax: false, tray: false, hud: false, actions: false, kbd: false, deskSel: null,
+    tracking: true, hand: 'Derecha', mode: 0, clickMode: 'pinch', cam: 0,
+    sens: 4, speed: 620, dead: 18, dwell: 1.2, debounce: 150, filter: true, audio: true, visual: true, pinchMm: 18,
+    gest: { pinch: true, palm: true, dwell: true, dbl: false, fist: false, face: false },
+    acts: { pinch: 0, palm: 4, dwell: 0, dbl: 2, fist: 3, face: 1 }, phase: 1, flash: null,
+    hx: 0.5, hy: 0.45, pinching: false, clicks: 0,
+    fps: 30.2, lat: 142, lux: 380, cpu: 12.4, ram: 185, conf: 98.4, tol: 42, pressure: 12, now: Date.now(),
+    lastEvent: 'Pellizco Detectado', lastScore: 98,
+    saved: true, saveState: 0, mapSaveState: 0, toast: '',
+    simX: 200, simY: 120, sandClicks: 0, ripple: null,
+    armed: null, armGo: false,
+    dwTest: 0,
+    labHits: [], labMiss: 0, labTimes: [], labHover: null, labT0: 0, calibrating: false,
+    text: 'La implementación del control gestual elimina la fricción impuesta por dispositivos tradicionales. Mediante la permanencia calibrada, el sistema minimiza la fatiga en usuarios con movilidad ',
+    shift: false, sym: false, typed: 0,
+    w: window.innerWidth, roadTab: 'sla', betaName: '', betaEmail: '', betaRoleI: 0, betaErr: '', betaSent: false
+  };
+  DEF = { sens: 4, speed: 620, dead: 18, dwell: 1.2, debounce: 150, pinchMm: 18, filter: true, audio: true, visual: true, clickMode: 'pinch' };
+  componentDidMount() {
+    try { const s = JSON.parse(localStorage.getItem('gf-settings') || 'null'); if (s) this.setState(s); } catch (e) {}
+    const sv = this.props.startView; if (sv) this.setState({ view: sv });
+    if (this.props.startOverlays) this.setState({ hud: true });
+    this.onRz = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this.onRz); this.onRz();
+    this.tk = setInterval(() => this.tick(), 1000);
+    this.onKey = e => {
+      if (e.key === 'F9') { e.preventDefault(); this.toggleTracking(); }
+      if (e.key === 'Escape') this.setState({ tray: false });
+    };
+    document.addEventListener('keydown', this.onKey);
+    this.onMove = e => {
+      const r = document.getElementById('gf-ring');
+      if (r) { r.style.left = e.clientX + 'px'; r.style.top = e.clientY + 'px'; }
+      if (this.dwEl && !this.dwEl.contains(e.target)) this.stopDwell();
+      if (this.lastFired && !this.lastFired.contains(e.target)) this.lastFired = null;
+    };
+    this.onOver = e => {
+      const s = this.state; if (s.clickMode !== 'dwell' || !s.tracking) return;
+      const el = e.target.closest && e.target.closest('button');
+      if (el && !el.disabled && el !== this.dwEl && el !== this.lastFired) this.startDwell(el);
+    };
+    document.addEventListener('mousemove', this.onMove);
+    document.addEventListener('mouseover', this.onOver);
+  }
+  componentWillUnmount() {
+    clearInterval(this.tk); window.removeEventListener('resize', this.onRz); document.removeEventListener('keydown', this.onKey);
+    document.removeEventListener('mousemove', this.onMove); document.removeEventListener('mouseover', this.onOver);
+  }
+  startDwell(el) {
+    this.stopDwell(); this.dwEl = el;
+    const r = document.getElementById('gf-ring'); if (!r) return;
+    const t0 = performance.now(), dur = this.state.dwell * 1000;
+    r.style.display = 'block'; r.style.webkitMask = 'radial-gradient(circle, transparent 20px, #000 21px)'; r.style.mask = r.style.webkitMask;
+    const loop = now => {
+      if (this.dwEl !== el) return;
+      const p = Math.min(1, (now - t0) / dur);
+      r.style.background = 'conic-gradient(#4cd7f6 ' + (p * 360) + 'deg, rgba(76,215,246,.18) 0)';
+      if (p >= 1) { this.stopDwell(); this.lastFired = el; el.click(); }
+      else this.raf = requestAnimationFrame(loop);
+    };
+    this.raf = requestAnimationFrame(loop);
+  }
+  stopDwell() {
+    this.dwEl = null; cancelAnimationFrame(this.raf);
+    const r = document.getElementById('gf-ring'); if (r) r.style.display = 'none';
+  }
+  say(m) { this.setState({ toast: m }); clearTimeout(this.tt); this.tt = setTimeout(() => this.setState({ toast: '' }), 2200); }
+  tick() {
+    const s = this.state, j = (a, b) => a + Math.random() * (b - a);
+    if (!s.tracking) { this.setState({ fps: 0, conf: 0, pressure: 0, now: Date.now() }); return; }
+    this.setState({ fps: +j(29.6, 30.6).toFixed(1), lat: Math.round(j(136, 148)), cpu: +j(11.6, 13.2).toFixed(1), ram: Math.round(j(183, 188)), conf: +j(97.5, 99.4).toFixed(1), tol: Math.round(j(38, 46)), pressure: s.pinching ? Math.round(j(90, 100)) : Math.round(j(8, 20)), now: Date.now() });
+  }
+  toggleTracking = () => { const t = !this.state.tracking; this.setState({ tracking: t }); this.stopDwell(); this.say(t ? 'Seguimiento activo' : 'Seguimiento pausado (F9)'); };
+  fire(name, score) { this.setState({ lastEvent: name, lastScore: score }); }
+  bump(k, d, min, max) { this.setState(s => ({ [k]: Math.round(Math.min(max, Math.max(min, s[k] + d)) * 100) / 100, saved: false })); }
+  sl(key, label, min, max, step, fmt, hint) {
+    const v = this.state[key];
+    return { label, val: v, min, max, step, text: fmt(v), hint, onInput: e => this.setState({ [key]: +e.target.value, saved: false }), dec: () => this.bump(key, -step, min, max), inc: () => this.bump(key, step, min, max) };
+  }
+  tg(key, icon, t, d, color) {
+    const on = this.state[key];
+    return { icon, t, d, color, on, bg: on ? '#06b6d4' : '#2d3449', left: on ? '28px' : '4px', knob: on ? 'check' : 'close', go: () => this.setState({ [key]: !on, saved: false }) };
+  }
+  handGeom() {
+    const s = this.state, hx = s.hx, hy = s.hy, R = s.hand === 'Izquierda' ? -1 : 1;
+    const P = { x: 250 + hx * 500, y: 300 + hy * 160 };
+    const W = { x: P.x * 0.7 + 150, y: P.y + 120 };
+    const at = (dx, dy) => ({ x: P.x + dx * R, y: P.y + dy });
+    const bases = [at(-70, 15), at(-35, -25), at(0, -35), at(35, -25), at(65, 0)];
+    const idxTip = at(-38, -140), thumbFree = at(-125, -50);
+    const thumbTip = s.pinching ? { x: idxTip.x - 6 * R, y: idxTip.y + 10 } : thumbFree;
+    const tips = [thumbTip, idxTip, at(4, -155), at(46, -135), at(88, -100)];
+    const f = n => Math.round(n);
+    let bones = 'M' + f(W.x) + ' ' + f(W.y) + 'L' + f(P.x) + ' ' + f(P.y);
+    let dots = 'M' + f(W.x) + ' ' + f(W.y) + 'h0M' + f(P.x) + ' ' + f(P.y) + 'h0';
+    bases.forEach((b, i) => {
+      const t = tips[i], m = { x: (b.x + t.x) / 2, y: (b.y + t.y) / 2 };
+      bones += 'M' + f(W.x) + ' ' + f(W.y) + 'L' + f(b.x) + ' ' + f(b.y) + 'L' + f(m.x) + ' ' + f(m.y) + 'L' + f(t.x) + ' ' + f(t.y);
+      dots += 'M' + f(b.x) + ' ' + f(b.y) + 'h0M' + f(m.x) + ' ' + f(m.y) + 'h0' + (i > 1 ? 'M' + f(t.x) + ' ' + f(t.y) + 'h0' : '');
+    });
+    const tx = f(idxTip.x), ty = f(idxTip.y);
+    const lx = tx > 700 ? tx - 235 : tx + 30, ly = ty < 90 ? ty + 30 : ty - 60;
+    return {
+      bones, dots, tx, ty, tol: 50,
+      pinchLine: s.pinching ? 'M' + f(idxTip.x) + ' ' + f(idxTip.y) + 'L' + f(thumbTip.x) + ' ' + f(thumbTip.y) : '',
+      tipDot: 'M' + tx + ' ' + ty + 'h0', tipColor: s.pinching ? '#4edea3' : '#ffffff',
+      lx, ly, lx2: lx + 10, ly2: ly + 18, ly3: ly + 34,
+      label: 'CURSOR X:' + Math.round(tx / 1000 * 1920) + ' Y:' + Math.round(ty / 625 * 1080),
+      tolLabel: 'TOLERANCIA ±' + s.tol + 'px OK'
+    };
+  }
+  feedRect(e) { const r = e.currentTarget.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height }; }
+  renderVals() {
+    const s = this.state, self = this;
+    const on = s.tracking, MODES = [['Neuro Asistido', 'accessibility_new'], ['Precisión Dibujo', 'draw'], ['Reposo Pausa', 'bedtime']];
+    const view = v => () => this.setState({ view: v, winOpen: true });
+    const NAV = [['mon', 'videocam', 'Monitor y Detección', 'Cámara en vivo y telemetría'], ['cfg', 'tune', 'Configuración Básica', 'Sensibilidad y filtros'], ['map', 'pinch', 'Mapeo de Gestos', 'Biblioteca y acciones'], ['lab', 'science', 'Laboratorio', 'Calibración y puntería'], ['road', 'route', 'Hoja de Ruta', 'Fase 1 vs Fase 2 Pro']];
+    const nav = NAV.map(n => ({ icon: n[1], t: n[2], s: n[3], bg: s.view === n[0] ? '#222a3d' : 'transparent', color: s.view === n[0] ? '#4cd7f6' : '#bcc9cd', go: view(n[0]) }));
+    const ovl = (key, icon, t) => ({ icon, t, bg: s[key] ? 'rgba(76,215,246,.14)' : 'transparent', border: s[key] ? '#4cd7f6' : '#1e293b', go: () => this.setState({ [key]: !s[key] }) });
+    const overlayBtns = [ovl('hud', 'dashboard_customize', 'HUD flotante'), ovl('actions', 'ads_click', 'Barra de acciones'), ovl('kbd', 'keyboard', 'Teclado asistido')];
+    const taskbarTools = [ovl('hud', 'dashboard_customize', 'HUD flotante'), ovl('actions', 'ads_click', 'Barra de acciones'), ovl('kbd', 'keyboard', 'Teclado asistido')].map(o => ({ icon: o.icon, t: o.t, go: o.go, bg: o.bg === 'transparent' ? 'transparent' : '#222a3d' }));
+    const deskIcons = [['perfiles', 'folder_special', 'Perfiles_Neuro', 'cfg'], ['gesture', 'table_chart', 'Gesture_Flow.csv', 'map'], ['log', 'terminal', 'Daemon_Log', 'mon']].map(d => ({ icon: d[1], name: d[2], bg: s.deskSel === d[0] ? 'rgba(76,215,246,.18)' : 'transparent', select: () => this.setState({ deskSel: d[0] }), open: () => this.setState({ view: d[3], winOpen: true }) }));
+
+    // clicks
+    const hitClick = () => { if (!this.state.tracking) return; this.setState(x => ({ clicks: x.clicks + 1 })); };
+    const hand = this.handGeom();
+    const clickMode = s.clickMode;
+    const cfgSliders = [
+      this.sl('sens', 'Sensibilidad del movimiento', 1, 10, 1, v => 'Nivel ' + v + ' / 10', 'Cuánto se desplaza el cursor por cada cm de movimiento real.'),
+      this.sl('speed', 'Velocidad máxima del cursor', 200, 1200, 20, v => v + ' px/s', 'Límite de aceleración para evitar saltos fuera de pantalla.'),
+      this.sl('dead', 'Zona muerta central', 4, 40, 1, v => v + ' px', 'Espacio neutral alrededor del reposo.')
+    ];
+    const clickSliders = [
+      this.sl('dwell', 'Tiempo de permanencia (dwell)', 0.8, 2.5, 0.1, v => v.toFixed(1) + ' s', 'Tiempo inmóvil antes del clic automático.'),
+      this.sl('debounce', 'Retención antirrebote', 50, 400, 10, v => v + ' ms', 'Bloqueo que evita dobles pulsaciones involuntarias.')
+    ];
+    const mapSliders = [this.sl('pinchMm', 'Umbral de proximidad del pellizco', 12, 25, 1, v => v + ' mm'), this.sl('dwell', 'Temporizador de disparo (dwell)', 0.8, 2.5, 0.1, v => v.toFixed(1) + ' s')];
+    const traySliders = [this.sl('sens', 'Sensibilidad cursor', 1, 10, 1, v => v.toFixed(1) + ' / 10'), this.sl('dwell', 'Tiempo de dwell click', 0.8, 2.5, 0.1, v => v.toFixed(1) + ' s')];
+    const clickModes = [['pinch', 'pinch', 'Gesto de pellizco', 'Índice + pulgar frente a la lente.', '#4cd7f6'], ['dwell', 'timer', 'Clic por permanencia (Dwell)', 'Clic automático al mantener el puntero. Pasa el ratón sobre cualquier botón.', '#adc6ff']].map(m => ({ icon: m[1], t: m[2], d: m[3], color: m[4], on: clickMode === m[0], border: clickMode === m[0] ? '#4cd7f6' : 'transparent', bg: clickMode === m[0] ? '#222a3d' : '#131b2e', check: clickMode === m[0] ? 'check_circle' : 'radio_button_unchecked', go: () => { this.setState({ clickMode: m[0], saved: false }); this.say(m[0] === 'dwell' ? 'Modo dwell: mantén el puntero sobre un botón' : 'Modo pellizco'); } }));
+    const cfgToggles = [this.tg('audio', 'volume_up', 'Confirmación auditiva', 'Beep sutil al confirmar el clic', '#4cd7f6'), this.tg('visual', 'blur_circular', 'Retroalimentación visual', 'Halo expansivo al ejecutar el clic', '#4edea3')];
+    const filterOn = s.filter;
+
+    // gestures
+    const G = [['pinch', 'pinch', 'Pellizco Índice + Pulgar', 'Landmarks #4 y #8', 1, '#4cd7f6'], ['palm', 'pan_tool', 'Palma Guía / Abierta', 'Plano cartesiano X/Y', 1, '#adc6ff'], ['dwell', 'timelapse', 'Puntero Estacionario', 'Anclaje isométrico', 1, '#4edea3'], ['dbl', 'repeat', 'Doble Pellizco Rápido', '< 350 ms cadencia', 2, '#adc6ff'], ['fist', 'front_hand', 'Puño Cerrado', 'Agarre sostenido', 2, '#4cd7f6'], ['face', 'face', 'Guiño Ocular', 'Face Mesh 468 pts', 2, '#4edea3']];
+    const ACT = [['Clic izquierdo', 'mouse'], ['Clic derecho', 'contextual_token'], ['Doble clic', 'ads_click'], ['Arrastrar y soltar', 'drag_indicator'], ['Desplazar cursor 2D', 'open_with'], ['Scroll', 'swap_vert'], ['Sin acción', 'block']];
+    const gestures = G.map(g => {
+      const locked = g[4] === 2 && s.phase === 1, en = s.gest[g[0]] && !locked, a = ACT[s.acts[g[0]]], fl = s.flash === g[0];
+      return {
+        icon: g[1], title: g[2], sub: g[3], color: g[5], act: a[0], actIcon: a[1], on: en,
+        bg: fl ? '#222a3d' : '#131b2e', shadow: fl ? '0 0 24px rgba(78,222,163,.4)' : 'none', op: locked ? 0.45 : 1,
+        pill: locked ? 'Fase 2 Pro' : (en ? 'Activo' : 'Inactivo'), pillBg: en ? 'rgba(27,189,133,.2)' : '#2d3449', pillColor: en ? '#4edea3' : '#bcc9cd',
+        tBg: en ? '#06b6d4' : '#2d3449', tColor: en ? '#00424f' : '#dae2fd', tIcon: en ? 'toggle_on' : 'toggle_off', tText: en ? 'Activado' : 'Activar',
+        cycle: () => this.setState(x => ({ acts: { ...x.acts, [g[0]]: (x.acts[g[0]] + 1) % ACT.length } })),
+        toggle: () => { if (locked) { this.say('Requiere Fase 2 Pro'); return; } this.setState(x => ({ gest: { ...x.gest, [g[0]]: !x.gest[g[0]] } })); },
+        test: () => { if (locked || !s.gest[g[0]]) { this.say(locked ? 'Requiere Fase 2 Pro' : 'Activa el gesto para probarlo'); return; } this.fire(g[2] + ' detectado', 95 + Math.floor(Math.random() * 5)); this.setState({ flash: g[0] }); setTimeout(() => this.setState({ flash: null }), 700); this.say(a[0] + ' ejecutado'); }
+      };
+    });
+    const activeN = G.filter(g => s.gest[g[0]] && !(g[4] === 2 && s.phase === 1)).length;
+    const phaseOpts = [[1, 'verified', 'Fase 1 (MVP)'], [2, 'neurology', 'Fase 2 Pro']].map(p => ({ icon: p[1], t: p[2], bg: s.phase === p[0] ? '#222a3d' : 'transparent', color: s.phase === p[0] ? '#4cd7f6' : '#bcc9cd', go: () => this.setState({ phase: p[0] }) }));
+
+    // lab
+    const lux = s.lux, luxOk = lux >= 100 && lux <= 1000, luxColor = luxOk ? '#4edea3' : (lux < 100 ? '#f59e0b' : '#ef4444');
+    const TG = [[15, 25, 100], [50, 50, 100], [85, 22, 80], [26, 82, 60], [76, 80, 80]];
+    const labTargets = TG.map((t, i) => {
+      const hit = s.labHits.includes(i), hov = s.labHover === i && !hit;
+      return {
+        x: t[0] + '%', y: t[1] + '%', size: t[2], half: t[2] / 2, dur: hov ? s.dwell * 1000 : 0, fill: hov || hit ? '100%' : '0%',
+        border: hit ? '#4edea3' : '#4cd7f6', glow: hit ? 'rgba(78,222,163,.5)' : 'rgba(76,215,246,.25)', icon: hit ? 'check_circle' : 'adjust',
+        enter: () => { if (hit) return; this.setState({ labHover: i, labT0: Date.now() }); clearTimeout(this.labTm); if (this.state.clickMode !== 'click') this.labTm = setTimeout(() => this.labHit(i), this.state.dwell * 1000); },
+        leave: () => { clearTimeout(this.labTm); this.setState({ labHover: null }); },
+        click: e => { e.stopPropagation(); clearTimeout(this.labTm); this.labHit(i); }
+      };
+    });
+    const prec = s.labHits.length + s.labMiss ? Math.round(s.labHits.length / (s.labHits.length + s.labMiss) * 100) : 100;
+    const avg = s.labTimes.length ? (s.labTimes.reduce((a, b) => a + b, 0) / s.labTimes.length / 1000).toFixed(1) + 's' : '—';
+
+    // road
+    const f1op = s.roadTab === 'f2' ? 0.25 : 1, f2op = s.roadTab === 'f1' ? 0.25 : 1;
+    const ROLES = ['Terapeuta ocupacional / Fisioterapeuta', 'Ingeniero biomédico', 'Usuario con necesidades de accesibilidad', 'Investigador / Desarrollador'];
+
+    // keyboard
+    const type = ch => () => this.setState(x => ({ text: x.text + (x.shift ? ch.toUpperCase() : ch), shift: false, typed: x.typed + 1 }));
+    const raw = str => Array.from(str).map(c => ({ l: s.shift ? c.toUpperCase() : c, go: type(c) }));
+    const symRaw = str => Array.from(str).map(c => ({ l: c, go: () => this.setState(x => ({ text: x.text + c, typed: x.typed + 1 })) }));
+    const kRow1 = s.sym ? symRaw('1234567890') : raw('qwertyuiop'), kRow2 = s.sym ? symRaw('!¡?¿()-_:;') : raw('asdfghjklñ'), kRow3 = s.sym ? symRaw('+=/*&%$') : raw('zxcvbnm');
+    const DICT = ['reducida', 'redes', 'redondear', 'rediseño', 'movilidad', 'motora', 'gestual', 'control', 'cursor', 'clic', 'permanencia', 'fatiga', 'accesible', 'usuario', 'sistema', 'calibración', 'sensibilidad', 'tiempo', 'ergonomía', 'pantalla', 'teclado', 'precisión', 'detección', 'cámara', 'mano', 'dedos', 'gesto', 'apoyo', 'rango', 'reposo', 'motor', 'muscular'];
+    const m = s.text.match(/[\p{L}]+$/u), part = m ? m[0].toLowerCase() : '';
+    let sug = part ? DICT.filter(w => w.startsWith(part) && w !== part) : ['el', 'la', 'de', 'que', 'para', 'con'];
+    ['el', 'la', 'de', 'que'].forEach(w => { if (sug.length < 4 && !sug.includes(w)) sug.push(w); });
+    const suggestions = sug.slice(0, 4).map((w, i) => ({ w, color: i === 0 ? '#4cd7f6' : '#dae2fd', go: () => this.setState(x => ({ text: x.text.replace(/[\p{L}]+$/u, '') + w + ' ' })) }));
+
+    // actions
+    const AI = [['left', 'ads_click', 'Clic izquierdo', 'Acción primaria normal'], ['right', 'mouse', 'Clic derecho', 'Menú contextual'], ['dbl', 'double_arrow', 'Doble clic', 'Ejecución 2x'], ['drag', 'open_with', 'Arrastrar y soltar', 'Bloqueo de pinza'], ['scroll', 'swap_vert', 'Scroll continuo', 'Seguimiento vertical'], ['kbd', 'keyboard', 'Teclado en pantalla', 'Lanzar teclado dwell'], ['lock', 'pause_circle', 'Bloqueo de cursor', 'Pausa de fatiga']];
+    const actionItems = AI.map(a => {
+      const ar = s.armed === a[0], danger = a[0] === 'lock';
+      return { icon: a[1], t: a[2], d: a[3], tag: ar ? 'ARMADO' : (danger ? 'PAUSA' : ''), bg: ar ? '#4cd7f6' : (danger ? '#3a0a10' : '#171f33'), color: ar ? '#003640' : (danger ? '#ffdad6' : '#dae2fd'), go: () => this.armAction(a) };
+    });
+    const armedItem = AI.find(a => a[0] === s.armed);
+
+    // tele
+    const tele = [
+      { label: 'TASA DE REFRESCO', val: s.fps.toFixed(1), unit: 'FPS', note: 'Objetivo ≥ 30 FPS', icon: 'speed', status: !on ? 'PAUSADO' : (s.fps >= 30 ? 'ÓPTIMO' : 'LÍMITE'), color: on ? '#4edea3' : '#869397' },
+      { label: 'LATENCIA PIPELINE', val: on ? s.lat : 0, unit: 'ms', note: 'Objetivo < 200 ms', icon: 'timer', status: on ? 'CUMPLE SLA' : 'PAUSADO', color: on ? '#4cd7f6' : '#869397' },
+      { label: 'TOLERANCIA ERROR', val: on ? '±' + s.tol : '—', unit: 'px', note: 'Margen objetivo ±50 px', icon: 'adjust', status: on ? 'EN RANGO' : 'PAUSADO', color: on ? '#adc6ff' : '#869397' },
+      { label: 'ILUMINANCIA', val: s.lux, unit: 'lux', note: luxOk ? 'Estándar adecuado' : 'Fuera de rango', icon: 'wb_sunny', status: luxOk ? 'OK' : 'REVISAR', color: luxColor },
+      { label: 'CPU · RAM', val: s.cpu.toFixed(1) + '%', unit: s.ram + ' MB', note: 'Uso de recursos', icon: 'memory', status: 'BAJO', color: '#4cd7f6' }
+    ];
+    const d = new Date(s.now);
+    const dwellMs = Math.round(s.dwell * 1000);
+    const mo = MODES[s.mode];
+    const camNames = ['HD Integrada 720p', 'Cámara USB 1080p', 'IR + RGB Wide-Angle'];
+    const setMode = i => () => { this.setState({ mode: i }); this.say('Modo: ' + MODES[i][0]); };
+    const feedMove = e => { const p = this.feedRect(e); this.setState({ hx: Math.max(0, Math.min(1, p.x)), hy: Math.max(0, Math.min(1, p.y)) }); };
+    const setHand = h => () => this.setState({ hand: h });
+    const handOpts = ['Izquierda', 'Derecha'].map(h => ({ t: h, bg: s.hand === h ? '#4cd7f6' : '#222a3d', color: s.hand === h ? '#003640' : '#dae2fd', go: setHand(h) }));
+    const saveBg = s.saveState === 1 ? '#4edea3' : '#4cd7f6', saveMapBg = s.mapSaveState === 1 ? '#4edea3' : '#06b6d4';
+    const rippleShow = s.ripple;
+    const dwT = s.dwTest;
+    const tolLab = on ? 'Mano ' + s.hand + ' detectada' : 'Sin señal';
+
+    return {
+      deskIcons, winOpen: s.winOpen, winInset: (s.winMax||s.w<1200) ? '0 0 52px 0' : '28px 40px 76px 130px', winRadius: (s.winMax||s.w<1200) ? '0' : '14px', navW: s.w<1100?'76px':'250px', navTxt: s.w<1100?'none':'flex', pillDisp: s.w<1100?'none':'flex',
+      nav, overlayBtns, taskbarTools,
+      vMon: s.view === 'mon', vCfg: s.view === 'cfg', vMap: s.view === 'map', vLab: s.view === 'lab', vRoad: s.view === 'road',
+      statusDot: on ? '#4edea3' : '#ef4444', statusText: on ? 'Sistema Activo' : 'Sistema Pausado', topTele: s.fps.toFixed(0) + ' FPS • ' + (on ? s.lat : 0) + 'ms • ' + s.lux + ' lux',
+      pauseLabel: on ? 'Pausar [F9]' : 'Reanudar [F9]', pauseIcon: on ? 'pause_circle' : 'play_circle', pauseColor: on ? '#ffb4ab' : '#4edea3', pauseBorder: on ? 'rgba(255,180,171,.5)' : 'rgba(78,222,163,.5)',
+      toggleTracking: this.toggleTracking,
+      minWin: () => this.setState({ winOpen: false }), maxWin: () => this.setState({ winMax: !s.winMax }), closeWin: () => this.setState({ winOpen: false }),
+      toggleWin: () => this.setState({ winOpen: !s.winOpen }),
+      modeName: mo[0].toUpperCase().replace(' ', '_'), engineTag: on ? 'DWELL_ENGINE_OK' : 'ENGINE_PAUSED',
+      // monitor
+      feedMove, feedDown: e => { if (!on) return; this.setState({ pinching: true }); if (s.gest.pinch) { hitClick(); this.fire('Pellizco detectado', 96 + Math.floor(Math.random() * 4)); } }, feedUp: () => { if (this.state.pinching) this.setState({ pinching: false }); },
+      hand, feedOpacity: on ? 1 : 0.15,
+      handDetected: tolLab, confText: on ? 'CONFIANZA ' + Math.round(s.conf) + '%' : '', confLock: on ? s.conf.toFixed(1) + '% LOCK' : 'SIN SEÑAL',
+      kalmanText: 'Estabilizador Kalman: ' + (filterOn ? 'ON' : 'OFF'),
+      pinchColor: s.pinching ? '#4edea3' : '#869397', pinchText: !on ? 'PAUSADO' : (s.pinching ? 'PINCH ACTIVO' : 'PINCH EN ESPERA'),
+      trkBg: on ? '#1bbd85' : '#222a3d', trkColor: on ? '#003824' : '#dae2fd', trkTitle: on ? 'Tracking activo' : 'Tracking pausado', trkSub: on ? 'CLIC O F9 PARA SUSPENDER' : 'CLIC PARA REANUDAR',
+      cycleCam: () => this.setState({ cam: (s.cam + 1) % 3 }), camName: camNames[s.cam], handOpts,
+      recenter: () => { this.setState({ hx: 0.5, hy: 0.45 }); this.say('Cursor recentrado'); },
+      slaText: on ? 'SLA: OK' : 'SLA: PAUSADO', tele,
+      pointerState: on ? 'Rastreando posición' : 'Seguimiento detenido', smoothText: 'Suavizado: ' + (filterOn ? 'Activo' : 'Off') + ' (' + (filterOn ? 98 : 0) + '%)',
+      clicks: s.clicks, pressure: s.pressure,
+      // config
+      savedText: s.saved ? 'sin cambios' : 'cambios sin guardar', savedColor: s.saved ? '#4edea3' : '#f59e0b',
+      cfgSliders, clickSliders, cfgToggles, clickModes,
+      filter: filterOn, toggleFilter: () => this.setState({ filter: !filterOn, saved: false }), filterBg: filterOn ? '#06b6d4' : '#2d3449', filterLeft: filterOn ? '52px' : '4px', filterIcon: filterOn ? 'check' : 'close',
+      filterChip: filterOn ? 'x1.8 BETA' : 'OFF', filterChipBg: filterOn ? '#004e5c' : '#2d3449', filterChipColor: filterOn ? '#4cd7f6' : '#bcc9cd',
+      dead: s.dead, deadR: Math.round(s.dead * 1.1), deadPx: s.dead * 2, deadMargin: -s.dead,
+      clickModeName: clickMode === 'dwell' ? 'Dwell' : 'Pellizco', dwell: s.dwell.toFixed(1), dwellMs,
+      sandClicks: s.sandClicks, simX: s.simX, simY: s.simY, simLag: filterOn ? Math.round(80 + (11 - s.sens) * 22) : 0,
+      sandMove: e => { const r = e.currentTarget.getBoundingClientRect(); this.setState({ simX: e.clientX - r.left, simY: e.clientY - r.top }); },
+      sandDown: e => { const r = e.currentTarget.getBoundingClientRect(); this.setState({ ripple: { x: e.clientX - r.left, y: e.clientY - r.top, on: true } }); setTimeout(() => this.setState({ ripple: null }), 350); },
+      sandHit: e => { this.setState(x => ({ sandClicks: x.sandClicks + 1 })); if (s.audio && window.AudioContext) { try { const c = new AudioContext(), o = c.createOscillator(), g = c.createGain(); o.frequency.value = 880; g.gain.value = 0.05; o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + 0.08); } catch (x) {} } },
+      rippleX: rippleShow ? rippleShow.x : 0, rippleY: rippleShow ? rippleShow.y : 0, rippleScale: rippleShow ? 1.6 : 0, rippleOp: rippleShow ? (s.visual ? 1 : 0) : 0,
+      resetCfg: () => { this.setState({ ...this.DEF, saved: false }); this.say('Valores por defecto restaurados'); },
+      saveCfg: () => { this.persist(); this.setState({ saveState: 1, saved: true }); setTimeout(() => this.setState({ saveState: 0 }), 1800); },
+      saveBg, saveIcon: s.saveState ? 'task_alt' : 'save', saveLabel: s.saveState ? '¡Guardado con éxito!' : 'Guardar configuración',
+      // mapeo
+      phaseOpts, activeCount: activeN + ' activos', gestures, mapSliders,
+      restoreMap: () => { this.setState({ pinchMm: 18, dwell: 1.2, phase: 1, gest: { pinch: true, palm: true, dwell: true, dbl: false, fist: false, face: false }, acts: { pinch: 0, palm: 4, dwell: 0, dbl: 2, fist: 3, face: 1 } }); this.fire('Valores restaurados', 98); },
+      saveMap: () => { this.persist(); this.setState({ mapSaveState: 1 }); setTimeout(() => this.setState({ mapSaveState: 0 }), 1800); },
+      saveMapBg, saveMapIcon: s.mapSaveState ? 'check_circle' : 'save', saveMapLabel: s.mapSaveState ? 'Mapeo aplicado' : 'Guardar mapeo',
+      lastEvent: s.lastEvent, lastScore: s.lastScore,
+      dwellTestStart: () => { this.setState({ dwTest: 1 }); clearTimeout(this.dwT); this.dwT = setTimeout(() => { this.setState({ dwTest: 2 }); this.fire('Dwell estacionario detectado', 100); this.say('¡Clic por dwell confirmado!'); setTimeout(() => this.setState({ dwTest: 0 }), 1000); }, s.dwell * 1000); },
+      dwellTestCancel: () => { clearTimeout(this.dwT); this.setState({ dwTest: 0 }); },
+      dwellTestW: dwT ? '100%' : '0%', dwellTestDur: dwT === 1 ? dwellMs : 150, dwellTestBg: dwT === 2 ? '#06b6d4' : '#222a3d',
+      dwellTestText: dwT === 2 ? '¡CLIC CONFIRMADO!' : (dwT === 1 ? 'Fijando…' : 'Mantén el cursor aquí'),
+      // lab
+      lux, luxColor, luxState: luxOk ? 'ÓPTIMO' : (lux < 100 ? 'POCA LUZ' : 'SOBREEXPUESTO'), luxPillBg: luxOk ? 'rgba(27,189,133,.2)' : 'rgba(239,68,68,.2)', luxPos: Math.min(100, lux / 15),
+      setLux: e => this.setState({ lux: +e.target.value }),
+      labTele: [{ l: 'Contraste mano-fondo', v: luxOk ? 'Excelente' : 'Bajo' }, { l: 'Ángulo cámara', v: 'Frontal 0°' }, { l: 'Captura', v: (on ? 60 : 0) + ' FPS' }],
+      autoCal: () => this.autoCal(), calIcon: s.calibrating ? 'hourglass_top' : 'auto_fix_high', calLabel: s.calibrating ? 'Calibrando…' : 'Calibrar iluminación automática',
+      labStats: [{ l: 'Precisión', v: prec + '%', c: '#4edea3' }, { l: 'Tiempo promedio', v: avg, c: '#4cd7f6' }, { l: 'Aciertos', v: s.labHits.length + '/5', c: '#dae2fd' }],
+      labTargets, labMiss: () => this.setState(x => ({ labMiss: x.labMiss + 1 })),
+      labMsg: s.labHits.length === 5 ? '¡Ronda completa!' : 'Pasa el cursor sobre una diana y mantén ' + s.dwell.toFixed(1) + ' s (o haz clic).',
+      labReset: () => { clearTimeout(this.labTm); this.setState({ labHits: [], labMiss: 0, labTimes: [], labHover: null }); },
+      posture: [{ icon: 'straighten', v: '50 cm', t: 'Distancia recomendada', d: 'Mantén 50 cm entre la palma y el sensor para maximizar la resolución de los nodos.' }, { icon: 'chair', v: 'Codo 90°', t: 'Apoyo articular de codo', d: 'Descansa el antebrazo sobre la mesa o un reposabrazos para mitigar micro-temblores.' }, { icon: 'light_mode', v: 'Frente 45°', t: 'Luz frontal sin contraluz', d: 'Evita ventanas o focos detrás del cuerpo para no perder contraste de detección.' }],
+      // road
+      roadTabs: [['sla', 'Vista integrada'], ['f1', 'Fase 1'], ['f2', 'Fase 2 Pro']].map(r => ({ t: r[1], bg: s.roadTab === r[0] ? '#222a3d' : 'transparent', color: s.roadTab === r[0] ? '#4cd7f6' : '#bcc9cd', go: () => this.setState({ roadTab: r[0] }) })),
+      f1op, f2op,
+      roadMetrics: [
+        { k: 'FRECUENCIA DE CAPTURA', icon: 'speed', t: 'Tasa de fotogramas', f1: '30 FPS', p1: 50, f2: '≥ 60 FPS', p2: 100 },
+        { k: 'TIEMPO DE INFERENCIA', icon: 'timer', t: 'Latencia de respuesta', f1: '< 200 ms', p1: 45, f2: '< 100 ms', p2: 80 },
+        { k: 'RADIO DE DISPERSIÓN', icon: 'adjust', t: 'Precisión del puntero', f1: '±50 px', p1: 40, f2: '±20 px', p2: 85 },
+        { k: 'CONDICIONES LUMÍNICAS', icon: 'wb_sunny', t: 'Rango de iluminación', f1: '100–1000 lux', p1: 55, f2: '50–3000 lux', p2: 95 },
+        { k: 'ECOSISTEMA', icon: 'devices', t: 'Plataformas', f1: 'Windows 10/11', p1: 25, f2: 'Multiplataforma', p2: 100 },
+        { k: 'CARGA DE PROCESAMIENTO', icon: 'memory', t: 'Consumo de CPU', f1: '< 25%', p1: 70, f2: '< 15%', p2: 40 }
+      ],
+      matrix: [
+        { t: 'Clics soportados', d: 'Acciones sobre elementos de la interfaz.', f1: 'Clic izquierdo básico (dwell)', c1: '#4edea3', f2: 'Derecho, doble y central' },
+        { t: 'Acciones complejas', d: 'Interacciones espaciales multiestado.', f1: 'No disponible', c1: '#869397', f2: 'Arrastrar y soltar, selección sostenida' },
+        { t: 'Perfiles personalizados', d: 'Sensibilidad y filtros por contexto.', f1: 'Configuración global única', c1: '#4edea3', f2: 'Perfiles automáticos por app' },
+        { t: 'Detección multimodal', d: 'Rasgos gestuales y corporales.', f1: 'Mano básica (pinch/palma)', c1: '#4edea3', f2: 'Gestos faciales, eye-tracking y voz' },
+        { t: 'Gobernanza y auditoría', d: 'Transparencia algorítmica.', f1: 'Prototipo cerrado', c1: '#bcc9cd', f2: 'Licencia abierta y SDK público' }
+      ],
+      betaSent: s.betaSent, betaOpen: !s.betaSent, betaName: s.betaName, betaEmail: s.betaEmail, betaRole: ROLES[s.betaRoleI], betaErr: s.betaErr,
+      betaMsg: 'Gracias, ' + s.betaName + '. Te escribiremos a ' + s.betaEmail + '.',
+      setBetaName: e => this.setState({ betaName: e.target.value }), setBetaEmail: e => this.setState({ betaEmail: e.target.value }),
+      cycleRole: () => this.setState({ betaRoleI: (s.betaRoleI + 1) % ROLES.length }),
+      sendBeta: () => { if (!s.betaName.trim()) return this.setState({ betaErr: 'Indica tu nombre o institución.' }); if (!/^\S+@\S+\.\S+$/.test(s.betaEmail)) return this.setState({ betaErr: 'Correo no válido.' }); this.setState({ betaErr: '', betaSent: true }); },
+      betaReset: () => this.setState({ betaSent: false, betaName: '', betaEmail: '' }),
+      // action bar
+      actions: s.actions, toggleActions: () => this.setState({ actions: false }), actionItems,
+      armText: armedItem ? 'Armado: ' + armedItem[2] : 'Selecciona una acción', armW: s.armed && s.armGo ? '100%' : '0%', armDur: s.armed && s.armGo ? dwellMs : 0,
+      // hud
+      hud: s.hud, toggleHud: () => this.setState({ hud: false }), tol: s.tol, fpsInt: Math.round(s.fps), luxInt: s.lux,
+      hudActions: [['Puntero activo', 'navigation', 0], ['Clic izquierdo', 'mouse', 1], ['Arrastre suave', 'pan_tool', 2], ['Modo reposo', 'bedtime', 3]].map(a => ({ t: a[0], icon: a[1], bg: s.hudAct === a[2] || (s.hudAct === undefined && a[2] === 1) ? '#4cd7f6' : '#222a3d', color: s.hudAct === a[2] || (s.hudAct === undefined && a[2] === 1) ? '#003640' : '#dae2fd', go: () => { this.setState({ hudAct: a[2] }); this.say(a[0]); } })),
+      sensDec: () => this.bump('sens', -1, 1, 10), sensInc: () => this.bump('sens', 1, 1, 10), sens: s.sens,
+      hudPauseBg: on ? '#8a0f16' : '#0d4a34', hudPauseColor: on ? '#ffdad6' : '#6ffbbe', hudPauseText: on ? 'Pausar (F9)' : 'Reanudar (F9)',
+      // keyboard
+      kbd: s.kbd, toggleKbd: () => this.setState({ kbd: false }), kbdDwellToggle: () => this.setState({ clickMode: clickMode === 'dwell' ? 'pinch' : 'dwell' }),
+      text: s.text, wordCount: s.text.trim().split(/\s+/).length, ppm: Math.min(28, 6 + s.typed) + ' PPM',
+      suggestions, kRow1, kRow2, kRow3, shift: s.shift, shiftKey: () => this.setState({ shift: !s.shift }), shiftBg: s.shift ? '#4cd7f6' : '#222a3d', shiftColor: s.shift ? '#003640' : '#dae2fd',
+      delWord: () => this.setState(x => ({ text: x.text.replace(/\s+$/, '').replace(/[^\s]+$/, '') })),
+      symKey: () => this.setState({ sym: !s.sym }), symLabel: s.sym ? 'ABC' : '?¿! 123',
+      typeComma: () => this.setState(x => ({ text: x.text.replace(/ $/, '') + ', ' })), typePeriod: () => this.setState(x => ({ text: x.text.replace(/ $/, '') + '. ', shift: true })),
+      typeSpace: () => this.setState(x => ({ text: x.text + ' ' })), typeEnter: () => this.setState(x => ({ text: x.text + '\n' })),
+      // tray
+      tray: s.tray, toggleTray: () => this.setState({ tray: !s.tray }), closeTray: () => this.setState({ tray: false }), trayBtnBg: s.tray ? '#222a3d' : 'transparent',
+      tracking: on, trayStatus: on ? 'Win32 Service: activo y transmitiendo' : 'Servicio en pausa',
+      trkSwitchBg: on ? '#1bbd85' : '#2d3449', trkSwitchLeft: on ? '32px' : '4px', trkSwitchIcon: on ? 'check' : 'close',
+      trayTele: [{ l: 'CPU PIPELINE', v: s.cpu.toFixed(1) + '%', c: '#dae2fd' }, { l: 'FRAME RATE', v: Math.round(s.fps) + ' FPS', c: '#4edea3' }, { l: 'LATENCIA', v: (on ? 13.8 : 0) + ' ms', c: '#4cd7f6' }],
+      traySliders, modeOpts: MODES.map((m2, i) => ({ t: m2[0], icon: m2[1], bg: s.mode === i ? '#2d3449' : '#171f33', color: s.mode === i ? '#4cd7f6' : '#bcc9cd', go: setMode(i) })),
+      goLab: () => this.setState({ view: 'lab', winOpen: true, tray: false }), trayFreeze: on ? 'Congelar [F9]' : 'Reanudar [F9]',
+      openSuite: () => this.setState({ winOpen: true, tray: false }),
+      // taskbar
+      tbWinBg: s.winOpen ? '#222a3d' : 'transparent', toastStart: () => this.say('Menú Inicio (simulado)'), toastSearch: () => this.say('Búsqueda (simulada)'),
+      clockTime: d.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' }), clockDate: d.toLocaleDateString('es', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+  persist() {
+    const s = this.state;
+    try { localStorage.setItem('gf-settings', JSON.stringify({ sens: s.sens, speed: s.speed, dead: s.dead, dwell: s.dwell, debounce: s.debounce, filter: s.filter, audio: s.audio, visual: s.visual, pinchMm: s.pinchMm, clickMode: s.clickMode, gest: s.gest, acts: s.acts, phase: s.phase })); } catch (e) {}
+  }
+  armAction(a) {
+    clearTimeout(this.armT);
+    if (this.state.armed === a[0]) { this.setState({ armed: null, armGo: false }); return; }
+    this.setState({ armed: a[0], armGo: false });
+    setTimeout(() => this.setState({ armGo: true }), 40);
+    this.armT = setTimeout(() => {
+      this.setState({ armed: null, armGo: false });
+      if (a[0] === 'kbd') this.setState({ kbd: true });
+      else if (a[0] === 'lock') this.toggleTracking();
+      else { this.setState(x => ({ clicks: x.clicks + 1 })); this.say(a[2] + ' ejecutado'); }
+    }, this.state.dwell * 1000);
+  }
+  labHit(i) {
+    const s = this.state; if (s.labHits.includes(i)) return;
+    const t = Date.now() - (s.labHover === i ? s.labT0 : Date.now() - s.dwell * 1000);
+    const hits = [...s.labHits, i];
+    this.setState({ labHits: hits, labTimes: [...s.labTimes, t], labHover: null });
+    if (hits.length === 5) { this.say('¡Ronda completa!'); setTimeout(() => this.setState({ labHits: [], labHover: null }), 2000); }
+  }
+  autoCal() {
+    if (this.state.calibrating) return;
+    this.setState({ calibrating: true });
+    const step = () => {
+      const l = this.state.lux, tgt = 420, n = l + Math.sign(tgt - l) * Math.min(Math.abs(tgt - l), 40);
+      this.setState({ lux: n });
+      if (n === tgt) { this.setState({ calibrating: false }); this.say('Iluminación calibrada a 420 lux'); } else setTimeout(step, 60);
+    };
+    step();
+  }
+}
+</script>
+</body>
+</html>

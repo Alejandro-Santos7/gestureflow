@@ -1,0 +1,18 @@
+# --- entorno local (setup.bat lo crea) ---
+.venv/
+__pycache__/
+*.pyc
+GestureFlow.lnk
+
+# --- datos de cada usuario: se crean al usar la app y nunca salen del equipo ---
+config.json
+data/
+runs/
+models/
+*.part
+
+# --- herramientas ---
+.impeccable/
+.claude/
+.vscode/
+.idea/

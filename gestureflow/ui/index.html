@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>GestureFlow</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+:root{
+  --bg0:#060e20;--bg1:#0b1326;--c1:#131b2e;--c2:#171f33;--c3:#222a3d;--c4:#2d3449;--c5:#31394d;--line:#1e293b;
+  --fg:#dae2fd;--mut:#bcc9cd;--dim:#869397;--cy:#4cd7f6;--cy2:#06b6d4;--gr:#4edea3;--gr2:#1bbd85;--bl:#adc6ff;
+  --red:#ffb4ab;--redbg:#3a0a10;--edge:#5b6b70;
+  --on-cy:#003640;--on-cy2:#00424f;--on-gr:#003824;--on-red:#ffdad6;--cy-hi:#7fe3f9;--red-hi:#93000a;
+  --ease:cubic-bezier(.16,1,.3,1);--warn:#f59e0b;--err:#ef4444;--mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:transparent;color:var(--fg);font:14px/1.45 Inter,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;user-select:none;overflow:hidden}
+body.main{background:var(--bg1)}
+button{font-family:inherit;color:inherit}
+.ms{font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;font-feature-settings:'liga';user-select:none}
+.mono{font-family:var(--mono)}
+input[type=range]{accent-color:var(--cy);flex:1;height:24px;cursor:pointer;min-width:0}
+input[type=text],input[type=email]{min-height:48px;border-radius:8px;border:1px solid var(--edge);background:var(--bg1);color:var(--fg);caret-color:var(--cy);padding:0 12px;font:inherit;font-size:14px;user-select:text;width:100%}
+::selection{background:color-mix(in srgb,var(--cy) 35%,transparent);color:var(--fg)}
+input::placeholder{color:var(--dim)}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--c4);border-radius:8px}::-webkit-scrollbar-track{background:transparent}
+button:focus-visible,input:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
+/* ---------- marco ---------- */
+#win{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg1);border:1px solid color-mix(in srgb,var(--cy) 18%,transparent);overflow:hidden}
+#top{height:48px;flex:none;display:flex;align-items:center;gap:14px;padding:0 0 0 14px;background:var(--bg0);border-bottom:1px solid var(--line)}
+#top img{width:24px;height:24px}
+.brand{font-weight:700;font-size:15px}
+.suite{font:11px var(--mono);padding:2px 8px;border-radius:99px;border:1px solid color-mix(in srgb,var(--cy) 35%,transparent);color:var(--cy)}
+#pill{flex:1;display:flex;justify-content:center;min-width:0}
+#pill>div{display:flex;align-items:center;gap:10px;padding:5px 14px;border-radius:99px;background:var(--c2);border:1px solid color-mix(in srgb,var(--cy) 20%,transparent);font:12px var(--mono);white-space:nowrap;overflow:hidden}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--gr);flex:none}
+#pauseTop{border:1px solid color-mix(in srgb,var(--red) 50%,transparent);cursor:pointer;color:var(--red);background:var(--c2);border-radius:8px;height:34px;padding:0 12px;font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;white-space:nowrap;flex:none;margin-left:auto}
+#pauseTop .ms{font-size:18px}
+.wbtn{border:0;background:transparent;color:var(--fg);width:46px;height:48px;cursor:pointer}
+.wbtn:hover{background:var(--c3)}.wbtn.x:hover{background:var(--red-hi)}
+.wbtn .ms{font-size:18px}
+#body{flex:1;display:flex;min-height:0}
+nav{width:250px;flex:none;background:var(--bg0);border-right:1px solid var(--line);padding:16px 8px;display:flex;flex-direction:column;gap:6px;overflow:auto}
+.navlab{font:11px var(--mono);letter-spacing:.08em;color:var(--dim);padding:4px 10px 8px}
+.nb{border:0;cursor:pointer;text-align:left;min-height:58px;border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:12px;background:transparent;color:var(--mut)}
+.nb:hover{background:var(--c3)}.nb.on{background:var(--c3);color:var(--cy)}
+.nb b{display:block;font-weight:600;font-size:14px}.nb small{display:block;font-size:12px;color:var(--dim)}
+.ob{border:1px solid var(--line);cursor:pointer;text-align:left;min-height:48px;border-radius:10px;padding:6px 12px;display:flex;align-items:center;gap:10px;background:transparent;font-size:13px;font-weight:500}
+.ob:hover{background:var(--c3)}.ob.on{background:color-mix(in srgb,var(--cy) 14%,transparent);border-color:var(--cy)}
+.ob .ms{font-size:20px;color:var(--cy)}
+.engine{margin-top:8px;padding:10px 12px;border-radius:10px;background:var(--c1);font:11px/1.5 var(--mono);color:var(--gr)}
+main{flex:1;min-width:0;overflow:auto;padding:28px 32px 40px;display:flex;flex-direction:column;gap:22px}
+#status{height:32px;flex:none;background:var(--bg0);border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 16px;font:12px var(--mono);color:var(--mut)}
+@media (max-width:1100px){nav{width:76px}.nb span:last-child,.navlab,.ob span:last-child,.engine{display:none}#pill{display:none}}
+/* ---------- piezas ---------- */
+.between{display:flex;justify-content:space-between;align-items:center}
+.kv{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.hpill{padding:5px 10px;background:var(--c3);border-radius:99px}
+.head{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between}
+h1{margin:4px 0 0;font-size:30px;letter-spacing:-.02em;line-height:1.15}
+h2{margin:0;font-size:22px;display:flex;gap:10px;align-items:center}
+.sub{margin:6px 0 0;color:var(--mut);font-size:15px;max-width:720px;text-wrap:pretty}
+.row{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.card{background:var(--c2);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.card.c1{background:var(--c1)}.card.c3{background:var(--c3)}
+.ct{display:flex;gap:12px;align-items:center;font-size:20px;font-weight:600}.ct .ms{color:var(--cy)}
+.chip{font:13px var(--mono);color:var(--cy);background:var(--c4);padding:2px 10px;border-radius:6px;white-space:nowrap}
+.pillg{font:11px var(--mono);padding:3px 9px;border-radius:99px;white-space:nowrap;font-weight:600;background:color-mix(in srgb,var(--gr2) 20%,transparent);color:var(--gr)}
+.pillg.off{background:var(--c4);color:var(--mut)}.pillg.blue{background:var(--c4);color:var(--bl)}.pillg.bad{background:color-mix(in srgb,var(--err) 20%,transparent);color:var(--red)}
+.hint{color:var(--mut);font-size:14px;text-wrap:pretty}
+.btn{min-height:56px;border:0;cursor:pointer;border-radius:12px;padding:0 20px;font-weight:600;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--c3);color:var(--fg)}
+.btn:hover{background:var(--c4)}.btn:active{transform:scale(.98)}
+.btn.pri{background:var(--cy);color:var(--on-cy);font-weight:700;box-shadow:0 6px 16px -8px rgba(0,0,0,.6)}.btn.pri:hover{background:var(--cy-hi)}
+.btn.ok{background:var(--gr2);color:var(--on-gr)}.btn.dan{background:var(--redbg);color:var(--on-red)}
+.btn[disabled]{opacity:.45;cursor:default}
+.sq{flex:none;width:56px;height:56px;border:0;cursor:pointer;border-radius:12px;background:var(--c3);color:var(--fg)}
+.sq:hover{background:var(--c5)}.sq:active{transform:scale(.95)}
+.sl{background:var(--c1);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.slh{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline}
+.slr{display:flex;align-items:center;gap:14px}
+.sw{position:relative;flex:none;width:64px;height:40px;border:0;cursor:pointer;border-radius:99px;background:var(--c4);transition:background .2s}
+.sw .knob{position:absolute;top:4px;left:4px;width:32px;height:32px;border-radius:50%;background:var(--on-cy2);color:#acedff;display:flex;align-items:center;justify-content:center;transition:transform .2s var(--ease)}
+.sw .knob .ms{font-size:16px}.sw.on{background:var(--cy2)}.sw.on .knob{transform:translateX(24px)}
+.sw.big{width:96px;height:56px}.sw.big .knob{width:48px;height:48px}.sw.big.on .knob{transform:translateX(40px)}.sw.big .ms{font-size:22px}
+.tg{background:var(--c1);border-radius:14px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px}
+.tg>span{display:flex;gap:12px;align-items:center}.tg b{display:block;font-size:14px}.tg small{display:block;font-size:13px;color:var(--mut)}
+.seg{display:flex;padding:4px;background:var(--c1);border-radius:14px;gap:4px}
+.seg button{min-height:48px;border:0;cursor:pointer;border-radius:10px;padding:0 16px;font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px;background:transparent;color:var(--mut)}
+.seg button.on{background:var(--c3);color:var(--cy)}
+.bar{height:14px;background:var(--c4);border-radius:99px;padding:2px}.bar>div{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--cy),var(--gr));transition:width .2s}
+.bar.thin{height:8px;padding:0;overflow:hidden}
+/* feed de cámara */
+.feed{position:relative;aspect-ratio:4/3;background:var(--bg0);border-radius:16px;overflow:hidden;box-shadow:inset 0 0 40px rgba(0,0,0,.6);background-image:radial-gradient(var(--c2) 1px,transparent 1px);background-size:24px 24px}
+.feed img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55}
+.feed canvas{position:absolute;inset:0;width:100%;height:100%}
+.badge{position:absolute;background:color-mix(in srgb,var(--c2) 92%,transparent);padding:8px 14px;border-radius:12px;font-size:13px;font-weight:600;display:flex;gap:10px;align-items:center}
+.badge.m{font:12px var(--mono);padding:6px 12px;border-radius:8px;color:var(--cy);background:color-mix(in srgb,var(--c3) 92%,transparent)}
+.nosig{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--dim);font:13px var(--mono)}
+/* telemetría */
+.tele{background:var(--c2);border-radius:14px;padding:16px;display:flex;justify-content:space-between;align-items:center}
+.tele .k{font:11px var(--mono);letter-spacing:.06em;color:var(--dim)}
+.tele .v{font:700 32px var(--mono)}.tele .u{font:13px var(--mono);color:var(--mut)}
+.tele .n{font-size:12px;color:var(--mut)}.tele .st{font:600 11px var(--mono)}
+/* gestos */
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.gcard{background:var(--c1);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px;transition:box-shadow .3s,background .3s}
+.gcard.flash{background:var(--c3);box-shadow:0 0 0 2px var(--gr)}.gcard.wait{box-shadow:0 0 0 2px var(--cy)}
+.gcard.lock{background:transparent;box-shadow:inset 0 0 0 1px var(--c4)}.gcard.lock .gic{opacity:.5}
+.gic{width:44px;height:44px;border-radius:10px;background:var(--c3);display:flex;align-items:center;justify-content:center;flex:none}
+.act{border:0;cursor:pointer;text-align:left;background:var(--c3);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:48px}
+.act:hover{background:var(--c4)}
+/* tablas */
+.tbl{background:var(--c1);border-radius:16px;overflow:hidden}
+.tr{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:14px;padding:16px 20px;border-top:1px solid var(--line);font-size:13px;align-items:center}
+.tr.h{background:var(--c2);font:11px var(--mono);letter-spacing:.06em;border-top:0;padding:14px 20px}
+/* toast */
+#toast{position:fixed;left:50%;bottom:48px;transform:translateX(-50%) translateY(20px);background:var(--fg);color:var(--bg1);padding:12px 20px;border-radius:12px;font-weight:600;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.5);z-index:80;display:flex;gap:10px;align-items:center;opacity:0;pointer-events:none;transition:opacity .15s,transform .25s var(--ease)}
+#toast.on{opacity:1;transform:translateX(-50%)}
+#toast .ms{color:#00687a;font-size:20px}
+/* paneles flotantes */
+.panel{position:fixed;inset:0;background:rgba(15,23,42,.97);border:1px solid color-mix(in srgb,var(--cy) 25%,transparent);border-radius:20px;display:flex;flex-direction:column;gap:12px;padding:16px;overflow:auto}
+.ai{border:0;cursor:pointer;text-align:left;min-height:68px;border-radius:14px;padding:0 14px;display:flex;align-items:center;gap:14px;background:var(--c2)}
+.ai:hover{filter:brightness(1.15)}.ai .ms{font-size:28px;background:rgba(0,0,0,.18);border-radius:10px;padding:8px}
+.ai.on{background:var(--cy);color:var(--on-cy)}.ai.dan{background:var(--redbg);color:var(--on-red)}
+.ai b{display:block;font-size:17px;font-weight:600}.ai small{display:block;font:12px var(--mono);opacity:.85}
+.target{padding:0;font:inherit;color:inherit;position:absolute;border-radius:50%;background:var(--c2);border:2px solid var(--cy);overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;transform:translate(-50%,-50%)}
+.target .fill{position:absolute;left:0;right:0;bottom:0;height:0;background:color-mix(in srgb,var(--cy) 35%,transparent)}
+.target.hit{border-color:var(--gr)}.target.hit .fill{height:100%}
+.ripple{position:absolute;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;background:color-mix(in srgb,var(--cy) 40%,transparent);pointer-events:none;animation:rip .35s forwards}
+@keyframes rip{from{transform:scale(.2);opacity:1}to{transform:scale(1.6);opacity:0}}
+@keyframes ripfade{from{opacity:1}to{opacity:0}}
+/* movimiento reducido: sin desplazamientos ni escalas; se conservan color, opacidad y los rellenos de dwell (indican tiempo) */
+@media (prefers-reduced-motion:reduce){
+  #toast,#toast.on{transform:translateX(-50%)}
+  .btn:active,.sq:active{transform:none}
+  .sw .knob{transition:none}
+  .ripple{animation-name:ripfade;transform:none}
+}
+.step{display:none}.step.on{display:flex}
+.kbd{font:12px var(--mono);background:var(--c3);border-radius:6px;padding:2px 8px;color:var(--cy)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="toast" role="status" aria-live="polite"><span class="ms" aria-hidden="true">info</span><span id="toastTxt"></span></div>
+<script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+<script>
+"use strict";
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const OVL = location.hash.slice(1) || 'main';
+let bk = null;
+let S = { cfg: {}, cameras: [], files: [], runs: [], modes: [], overlays: {} };
+let T = { fps: 0, latency: 0, bright: 0, cpu: 0, ram: 0, paused: false, source: 'reglas', conf: 0, det: 0, pressure: 0, jitter: 0, clicks: 0, event: ['En espera', 0], zone: [.2, .2, .8, .75], screen: [1920, 1080] };
+const ui = { view: 'mon', dirty: false, lastEdit: 0, phase: 1, roadTab: 'sla', testing: null, testUntil: 0, flash: null,
+  trainBusy: false, trainRes: null, rounds: 6, user: 'usuario', recording: false,
+  tut: 0, tutOk: {}, tutClicks: 0, palmaSince: 0,
+  lab: { hits: [], miss: 0, times: [], hover: null, t0: 0, tm: null }, sandClicks: 0, dwTest: 0, started: Date.now() };
+const call = (name, ...a) => bk && bk[name] && bk[name](...a);
+const rnd = (k, v) => +(+v).toFixed((String(SL[k].step).split('.')[1] || '').length);
+
+/* ---------- utilidades ---------- */
+function toast(m) { $('#toastTxt').textContent = m; const t = $('#toast'); t.classList.add('on'); clearTimeout(toast.tm); toast.tm = setTimeout(() => t.classList.remove('on'), 2400); }
+const on = () => !T.paused && !(T.rec);
+/* los ticks llegan a ~30 Hz: solo reescribir el HTML cuando cambia */
+const setHTML = (el, h) => { if (el && el._h !== h) { el._h = h; el.innerHTML = h; } };
+const pct = (v, a, b) => Math.max(0, Math.min(100, (v - a) / (b - a) * 100));
+const brightPct = () => Math.round(T.bright / 255 * 100);
+const brightOk = () => T.bright >= 95 && T.bright <= 165;
+const ACT = { left: ['Clic izquierdo', 'mouse'], right: ['Clic derecho', 'contextual_token'], double: ['Doble clic', 'ads_click'], drag: ['Arrastrar y soltar', 'drag_indicator'], middle: ['Clic central', 'adjust'], none: ['Sin acción', 'block'] };
+const camName = () => S.cameras[S.cfg.camera_index] || ('Cámara ' + S.cfg.camera_index);
+
+const SL = {
+  sens: { label: 'Sensibilidad del movimiento', min: 1, max: 10, step: 1, fmt: v => `Nivel ${v} / 10`, hint: 'Más sensibilidad = zona activa más pequeña: menos recorrido del brazo para cruzar la pantalla.' },
+  max_speed: { label: 'Velocidad máxima del cursor', min: 400, max: 4000, step: 100, fmt: v => `${v} px/s`, hint: 'Límite de aceleración para evitar saltos fuera de pantalla.' },
+  dead_px: { label: 'Zona muerta', min: 0, max: 40, step: 1, fmt: v => `${v} px`, hint: 'Movimientos menores se ignoran: el cursor reposa sin deriva.' },
+  min_cutoff: { label: 'Intensidad del filtro', min: 0.1, max: 5, step: 0.1, fmt: v => `${(+v).toFixed(1)} Hz`, hint: 'Menor = más suave y estable; mayor = más directo.' },
+  beta: { label: 'Reactividad al mover rápido', min: 0, max: 0.05, step: 0.001, fmt: v => (+v).toFixed(3), hint: 'Más alto = menos retardo cuando mueves la mano rápido (cursor más fluido); más bajo = más suave.' },
+  dwell_ms: { label: 'Tiempo de permanencia (dwell)', min: 300, max: 2500, step: 100, fmt: v => `${(v / 1000).toFixed(1)} s`, hint: 'Tiempo inmóvil antes del clic automático.' },
+  debounce_ms: { label: 'Retención antirrebote', min: 50, max: 600, step: 10, fmt: v => `${v} ms`, hint: 'Bloqueo tras cada clic que evita dobles pulsaciones involuntarias.' },
+  dwell_radius: { label: 'Radio de permanencia', min: 10, max: 100, step: 5, fmt: v => `${v} px`, hint: 'Cuánto puede moverse el cursor sin reiniciar el dwell.' },
+  pinch_conf: { label: 'Confianza mínima del pellizco', min: 0.5, max: 0.99, step: 0.01, fmt: v => `${Math.round(v * 100)} %`, hint: 'Más alto = menos clics fantasma (con modelo personal).' },
+};
+function slider(k, compact) {
+  const d = SL[k], v = S.cfg[k];
+  return `<div class="sl" data-sl="${k}"><div class="slh"><b>${d.label}</b><span class="chip" data-v>${d.fmt(v)}</span></div>
+  ${compact ? '' : `<div class="hint">${d.hint}</div>`}
+  <div class="slr"><button class="sq" data-a="bump" data-k="${k}" data-d="-1" aria-label="Disminuir ${d.label}"><span class="ms">remove</span></button>
+  <input type="range" min="${d.min}" max="${d.max}" step="${d.step}" value="${v}" data-k="${k}" aria-label="${d.label}">
+  <button class="sq" data-a="bump" data-k="${k}" data-d="1" aria-label="Aumentar ${d.label}"><span class="ms">add</span></button></div></div>`;
+}
+function setCfg(k, v, rerender) {
+  S.cfg[k] = v; ui.dirty = true; ui.lastEdit = Date.now();
+  call('setConfig', k, JSON.stringify(v));
+  $$(`[data-sl="${k}"]`).forEach(el => { el.querySelector('[data-v]').textContent = SL[k].fmt(v); const r = el.querySelector('input'); if (+r.value !== v) r.value = v; });
+  const sv = $('#saved'); if (sv) { sv.textContent = 'cambios sin guardar'; sv.style.color = 'var(--warn)'; }
+  if (rerender) render();
+}
+function sw(k, label, big) {
+  const v = S.cfg[k];
+  return `<button class="sw ${big ? 'big' : ''} ${v ? 'on' : ''}" data-a="tog" data-k="${k}" role="switch" aria-checked="${!!v}" aria-label="${label}"><span class="knob"><span class="ms">${v ? 'check' : 'close'}</span></span></button>`;
+}
+function toggleRow(k, icon, t, d, color) {
+  return `<div class="tg"><span><span class="ms" style="color:${color}">${icon}</span><span><b>${t}</b><small>${d}</small></span></span>${sw(k, t)}</div>`;
+}
+
+/* ---------- feed de cámara ---------- */
+/* el canvas no entiende var(): lee los tokens una vez */
+const K = Object.fromEntries(['cy', 'cy2', 'gr', 'fg', 'bg1'].map(n => [n, getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim()]));
+const BONES = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[0,17],[17,18],[18,19],[19,20]];
+function feed(id, big) {
+  return `<div class="feed" id="${id}" data-big="${big ? 1 : 0}"><img alt=""><canvas></canvas>
+  <div class="nosig"><span class="ms" style="font-size:40px">videocam</span><span>Esperando cámara…</span></div></div>`;
+}
+function drawFeed(el) {
+  const c = el.querySelector('canvas'), r = el.getBoundingClientRect(), dpr = devicePixelRatio || 1;
+  if (!r.width) return;
+  if (c.width !== Math.round(r.width * dpr)) { c.width = Math.round(r.width * dpr); c.height = Math.round(r.height * dpr); }
+  const g = c.getContext('2d'), W = c.width, H = c.height, big = el.dataset.big === '1', s = dpr * (big ? 1 : .7);
+  g.clearRect(0, 0, W, H);
+  if (T.jpeg) { el.querySelector('img').src = 'data:image/jpeg;base64,' + T.jpeg; el.querySelector('.nosig').style.display = 'none'; }
+  const [x0, y0, x1, y1] = T.zone;
+  g.setLineDash([6 * s, 6 * s]); g.strokeStyle = K.cy + 'aa'; g.lineWidth = 1.5 * s; g.strokeRect(x0 * W, y0 * H, (x1 - x0) * W, (y1 - y0) * H); g.setLineDash([]);
+  const lm = T.lm; if (!lm) return;
+  const P = i => [lm[i][0] * W, lm[i][1] * H];
+  g.globalAlpha = on() ? 1 : .35;
+  g.strokeStyle = K.cy + 'cc'; g.lineWidth = 3 * s; g.lineCap = 'round'; g.beginPath();
+  BONES.forEach(([a, b]) => { const p = P(a), q = P(b); g.moveTo(...p); g.lineTo(...q); }); g.stroke();
+  g.fillStyle = K.cy2; lm.forEach((_, i) => { const p = P(i); g.beginPath(); g.arc(p[0], p[1], 4.5 * s, 0, 7); g.fill(); });
+  const tip = T.ptr ? [T.ptr[0] * W, T.ptr[1] * H] : P(8), pinch = T.label === 'pinch';  // punto que mueve el cursor
+  if (pinch) { g.strokeStyle = K.gr; g.lineWidth = 4 * s; g.beginPath(); g.moveTo(...P(8)); g.lineTo(...P(4)); g.stroke(); }
+  g.fillStyle = pinch ? K.gr : '#fff'; g.beginPath(); g.arc(tip[0], tip[1], 9 * s, 0, 7); g.fill();
+  if (T.progress > 0) { g.strokeStyle = K.cy; g.lineWidth = 4 * s; g.beginPath(); g.arc(tip[0], tip[1], 20 * s, -Math.PI / 2, -Math.PI / 2 + T.progress * Math.PI * 2); g.stroke(); }
+  if (big && T.cursor) {
+    const lx = tip[0] > W * .7 ? tip[0] - 230 * s : tip[0] + 30 * s, ly = tip[1] < 90 * s ? tip[1] + 30 * s : tip[1] - 60 * s;
+    g.fillStyle = K.bg1 + 'ee'; g.strokeStyle = K.cy; g.lineWidth = 1 * s; g.beginPath(); g.roundRect(lx, ly, 215 * s, 44 * s, 6 * s); g.fill(); g.stroke();
+    g.font = `600 ${13 * s}px 'JetBrains Mono'`; g.fillStyle = K.fg; g.fillText(`CURSOR X:${Math.round(T.cursor[0])} Y:${Math.round(T.cursor[1])}`, lx + 10 * s, ly + 18 * s);
+    g.font = `${12 * s}px 'JetBrains Mono'`; g.fillStyle = K.gr; g.fillText(`GESTO ${String(T.label || '—').toUpperCase()} · ${T.conf}%`, lx + 10 * s, ly + 34 * s);
+  }
+  g.globalAlpha = 1;
+}
+let feedsWanted = 0;
+function syncFeeds() {
+  const want = document.visibilityState === 'visible' && $$('.feed').length ? 1 : 0;
+  if (want !== feedsWanted) { call('wantFrames', want - feedsWanted); feedsWanted = want; }
+}
+document.addEventListener('visibilitychange', () => { syncFeeds(); if (!document.hidden && $('#root').firstChild) onTick(T, true); });
+
+/* ---------- vistas de la suite ---------- */
+const NAV = [['mon', 'videocam', 'Monitor y Detección', 'Cámara en vivo y telemetría'], ['train', 'model_training', 'Entrenamiento', 'Tu modelo personal'], ['cfg', 'tune', 'Configuración Básica', 'Sensibilidad y filtros'], ['map', 'pinch', 'Mapeo de Gestos', 'Biblioteca y acciones'], ['lab', 'science', 'Laboratorio', 'Calibración y puntería'], ['road', 'route', 'Hoja de Ruta', 'Fase 1 vs Fase 2 Pro'], ['tut', 'school', 'Tutorial', 'Aprende a usarlo']];
+const OVERLAYS = [['hud', 'dashboard_customize', 'HUD flotante'], ['actions', 'ads_click', 'Barra de acciones'], ['kbd', 'keyboard', 'Teclado en pantalla']];
+
+function shell() {
+  return `<div id="win">
+  <div id="top" data-drag>
+    <img src="logo.svg" alt="" data-drag><span class="brand" data-drag>GestureFlow</span><span class="suite">SUITE</span>
+    <div id="pill" data-drag><div data-drag><span class="dot" id="pDot"></span><span id="pTxt">Sistema Activo</span><span style="color:var(--dim)">|</span><span id="pTele" style="color:var(--cy)">—</span></div></div>
+    <button id="pauseTop" data-a="pause"><span class="ms">pause_circle</span><span>Pausar [F9]</span></button>
+    <div style="display:flex"><button class="wbtn" data-a="min" aria-label="Minimizar"><span class="ms">remove</span></button><button class="wbtn" data-a="max" aria-label="Maximizar"><span class="ms" style="font-size:16px">crop_square</span></button><button class="wbtn x" data-a="close" aria-label="Cerrar y salir" title="Cerrar GestureFlow y apagar la cámara"><span class="ms">close</span></button></div>
+  </div>
+  <div id="camBanner" role="alert" hidden style="flex:none;display:none;align-items:center;gap:14px;padding:10px 16px;background:var(--redbg);color:var(--on-red);border-bottom:1px solid var(--red-hi)">
+    <span class="ms" style="color:var(--red)">videocam_off</span><span id="camMsg" style="flex:1;font-weight:600">Sin señal de la cámara</span>
+    <button class="btn" data-a="camrestart" style="min-height:44px;background:var(--cy);color:var(--on-cy);font-weight:700"><span class="ms" style="font-size:20px">restart_alt</span>Reiniciar cámara</button></div>
+  <div id="body">
+    <nav><div class="navlab">NAVEGACIÓN</div>
+      ${NAV.map(n => `<button class="nb" data-a="view" data-v="${n[0]}" title="${n[2]}"><span class="ms">${n[1]}</span><span><b>${n[2]}</b><small>${n[3]}</small></span></button>`).join('')}
+      <div style="flex:1"></div><div class="navlab">SUPERPOSICIONES</div>
+      ${OVERLAYS.map(o => `<button class="ob" data-a="ovl" data-v="${o[0]}" title="${o[2]}"><span class="ms">${o[1]}</span><span>${o[2]}</span></button>`).join('')}
+      <div class="engine" id="engine">—</div>
+    </nav>
+    <main id="main"></main>
+  </div>
+  <div id="status"><span style="display:flex;gap:8px;align-items:center"><span class="dot" id="sDot"></span><span id="sCam">Cámara</span> · <span style="color:var(--cy)">F9 o Ctrl+Alt+P pausa · Esc cierra menús</span></span><span id="sTag" style="color:var(--gr)">Motor listo</span></div>
+</div>`;
+}
+
+const VIEWS = {};
+VIEWS.mon = () => `
+<div class="head"><div><h1>Monitor y detección</h1>
+<p class="sub">Mueve la mano frente a la cámara: el cursor sigue ${S.cfg.anchor === 'indice' ? 'la punta del índice' : 'tus nudillos, así el pellizco no lo desvía'}. Pellizco o permanencia = clic.</p></div>
+<div style="padding:8px 14px;border-radius:10px;background:var(--c2);font:12px var(--mono)"><span style="color:var(--dim)">Modo:</span> <span style="color:var(--cy);font-weight:600" id="mProfile"></span></div></div>
+<div class="row">
+ <div style="flex:1 1 520px;min-width:0;display:flex;flex-direction:column;gap:14px">
+  <div style="position:relative">${feed('fMon', true)}
+   <div class="badge" style="left:14px;top:14px"><span class="dot" id="mDot"></span><span id="mHand">Sin señal</span><span class="mono" style="color:var(--gr)" id="mConf"></span></div>
+   <div class="badge m" style="left:14px;top:60px" id="mFilter"></div>
+   <div class="badge m" style="left:14px;bottom:14px;color:var(--mut);background:color-mix(in srgb,var(--bg0) 85%,transparent)" id="mLm">LANDMARKS 0/21</div>
+   <div class="badge m" style="right:14px;bottom:14px;color:var(--dim)" id="mPinch"><span class="ms" style="font-size:18px">touch_app</span><span>PINCH EN ESPERA</span></div>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;background:var(--c1);padding:14px;border-radius:16px">
+   <button id="mTrk" data-a="pause" style="flex:1 1 220px;min-height:64px;border:0;cursor:pointer;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:12px;font-weight:700;font-size:18px"></button>
+   <button data-a="cam" title="${esc(camName())}" style="flex:1 1 180px;min-width:0;min-height:64px;border:0;cursor:pointer;border-radius:12px;background:var(--c2);text-align:left;padding:0 16px;display:flex;flex-direction:column;justify-content:center"><span style="font-size:12px;color:var(--dim)">Dispositivo (clic para cambiar)</span><span style="font-weight:600;display:flex;gap:6px;align-items:center;max-width:100%"><span class="ms" style="font-size:20px;color:var(--cy)">videocam</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(camName())}</span></span></button>
+   <div class="seg" style="flex:1 1 200px;background:var(--c2);min-height:64px">${['Izquierda', 'Derecha'].map(h => `<button style="flex:1;justify-content:center;${S.cfg.hand === h ? 'background:var(--cy);color:var(--on-cy)' : 'background:var(--c3);color:var(--fg)'}" data-a="hand" data-v="${h}" aria-pressed="${S.cfg.hand === h}">${h}</button>`).join('')}</div>
+   <button class="btn" data-a="recenter" style="flex:0 0 132px;min-height:64px;padding:8px 12px;flex-direction:column;gap:2px;font-size:13px;line-height:1.25;text-align:center"><span class="ms" style="color:var(--cy)">filter_center_focus</span>Recentrar</button>
+   <button class="btn" data-a="camrestart" style="flex:0 0 132px;min-height:64px;padding:8px 12px;flex-direction:column;gap:2px;font-size:13px;line-height:1.25;text-align:center" title="Suelta y vuelve a abrir la cámara"><span class="ms" style="color:var(--cy)">restart_alt</span>Reiniciar cámara</button>
+  </div>
+ </div>
+ <div style="flex:0 1 330px;min-width:260px;display:flex;flex-direction:column;gap:12px">
+  <div class="between"><span style="font-size:20px;font-weight:700">Telemetría</span><span class="pillg" id="mSla">SLA: OK</span></div>
+  ${[['fps', 'TASA DE REFRESCO', 'FPS', 'Objetivo ≥ 30 FPS', 'speed'], ['lat', 'LATENCIA PIPELINE', 'ms', 'Objetivo < 200 ms', 'timer'], ['jit', 'ESTABILIDAD DEL PUNTERO', 'px', 'Margen objetivo ±50 px', 'adjust'], ['lux', 'LUMINOSIDAD', '%', 'Rango adecuado 37–65 %', 'wb_sunny'], ['cpu', 'CPU · RAM', '', 'Uso de recursos', 'memory']].map(t => `
+  <div class="tele" id="t-${t[0]}"><div><div class="k">${t[1]}</div><div style="display:flex;gap:6px;align-items:baseline;margin-top:2px"><span class="v">—</span><span class="u">${t[2]}</span></div><div class="n">${t[3]}</div></div>
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span class="ms">${t[4]}</span><span class="st"></span></div></div>`).join('')}
+ </div>
+</div>
+<div class="row" style="gap:16px">
+ <div class="card c1" style="flex:1 1 300px"><div style="display:flex;gap:14px;align-items:center"><div class="gic" style="width:60px;height:60px;border-radius:12px;color:var(--cy)"><span class="ms" style="font-size:34px">navigation</span></div><div><div style="font-size:19px;font-weight:700">Puntero / Movimiento</div><div class="hint">Dedo índice como vector de orientación.</div></div></div>
+  <div style="background:var(--c2);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;font-size:13px"><b id="mPtr">—</b><span class="mono" style="color:var(--cy);font-weight:600" id="mSmooth"></span></div></div>
+ <div class="card c1" style="flex:1.4 1 360px"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center"><div style="display:flex;gap:14px;align-items:center"><div class="gic" style="width:60px;height:60px;border-radius:12px;background:color-mix(in srgb,var(--cy2) 20%,transparent);color:var(--cy)"><span class="ms" style="font-size:34px">pinch</span></div><div><div style="font-size:19px;font-weight:700">Clic Virtual</div><div class="hint">Pellizco pulgar + índice · clics: <b style="color:var(--fg)" id="mClicks">0</b></div></div></div>
+  <div style="background:var(--c3);border-radius:10px;padding:6px 14px;text-align:right"><div class="mono" style="font-size:11px;color:var(--dim)">ACTIVACIÓN</div><div class="mono" style="font-size:24px;font-weight:700;color:var(--gr)"><span id="mPress">0</span>%</div></div></div>
+  <div class="bar"><div id="mPressBar" style="width:0"></div></div></div>
+</div>`;
+VIEWS.mon.tick = () => {
+  const o = on(), lmN = T.lm ? 21 : 0;
+  $('#mProfile').textContent = S.modes[S.cfg.mode]?.name || '—';
+  $('#mDot').style.background = T.lm && o ? 'var(--gr)' : 'var(--err)';
+  $('#mHand').textContent = T.lm ? `Mano ${T.side || ''} detectada` : (o ? 'Buscando mano…' : 'Seguimiento pausado');
+  $('#mConf').textContent = T.lm ? `CONFIANZA ${T.det}%` : '';
+  $('#mFilter').textContent = 'Estabilizador One Euro: ' + (S.cfg.filter ? 'ON' : 'OFF');
+  $('#mLm').textContent = `LANDMARKS ${lmN}/21 · GESTO ${String(T.label || '—').toUpperCase()}`;
+  const pb = $('#mPinch'); pb.style.color = T.label === 'pinch' ? 'var(--gr)' : 'var(--dim)';
+  pb.lastChild.textContent = !o ? 'PAUSADO' : (T.label === 'pinch' ? 'PINCH ACTIVO' : 'PINCH EN ESPERA');
+  const b = $('#mTrk'); b.style.background = o ? 'var(--gr2)' : 'var(--c3)'; b.style.color = o ? 'var(--on-gr)' : 'var(--fg)';
+  setHTML(b, `<span class="ms" style="font-size:28px">${o ? 'pause_circle' : 'play_circle'}</span><span style="display:flex;flex-direction:column;align-items:flex-start"><span>${o ? 'Tracking activo' : 'Tracking pausado'}</span><span class="mono" style="font-size:11px;font-weight:500">${o ? 'CLIC O F9 PARA SUSPENDER' : 'CLIC PARA REANUDAR'}</span></span>`);
+  const tele = (id, v, col, st) => { const e = $('#t-' + id); e.querySelector('.v').textContent = v; e.querySelector('.v').style.color = col; e.querySelector('.ms').style.color = col; const s = e.querySelector('.st'); s.textContent = st; s.style.color = col; };
+  const grey = 'var(--dim)';
+  tele('fps', T.fps.toFixed(1), o ? (T.fps >= 25 ? 'var(--gr)' : 'var(--warn)') : grey, !o ? 'PAUSADO' : (T.fps >= 25 ? 'ÓPTIMO' : 'LÍMITE'));
+  $('#t-fps .n').textContent = `Cursor a ${T.hz || 0} Hz · exposición ${Math.round(1000 * 2 ** T.exposure)} ms · objetivo ≥ 30 FPS`;
+  tele('lat', T.latency, o ? 'var(--cy)' : grey, !o ? 'PAUSADO' : (T.latency < 200 ? 'CUMPLE SLA' : 'ALTA'));
+  tele('jit', T.jitter ? '±' + T.jitter : '—', T.jitter > 50 ? 'var(--warn)' : 'var(--bl)', T.label === 'puntero' ? (T.jitter <= 50 ? 'EN RANGO' : 'INESTABLE') : 'SIN PUNTERO');
+  tele('lux', brightPct(), brightOk() ? 'var(--gr)' : 'var(--warn)', brightOk() ? 'OK' : 'REVISAR');
+  const c = $('#t-cpu'); c.querySelector('.v').textContent = T.cpu.toFixed(1) + '%'; c.querySelector('.u').textContent = T.ram + ' MB'; c.querySelector('.v').style.color = c.querySelector('.ms').style.color = 'var(--cy)'; c.querySelector('.st').textContent = T.cpu < 25 ? 'BAJO' : 'ALTO';
+  const sla = o && T.fps >= 25 && T.latency < 200; const p = $('#mSla'); p.textContent = !o ? 'SLA: PAUSADO' : (sla ? 'SLA: OK' : 'SLA: REVISAR'); p.className = 'pillg' + (sla ? '' : ' off');
+  const fz = T.freeze || { pct: 0, why: '' }, WHY = { pinch: 'pellizco', palma: 'palma', perdida: 'mano perdida' };
+  $('#mPtr').textContent = !o ? 'Seguimiento detenido' : (!T.lm ? 'Esperando mano' : (fz.pct > 3 ? `Congelado ${fz.pct}% · ${WHY[fz.why] || fz.why}` : 'Rastreando posición'));
+  $('#mSmooth').textContent = 'Suavizado: ' + (S.cfg.filter ? `Activo (${(+S.cfg.min_cutoff).toFixed(1)} Hz)` : 'Off');
+  $('#mClicks').textContent = T.clicks; $('#mPress').textContent = T.pressure; $('#mPressBar').style.width = T.pressure + '%';
+};
+
+VIEWS.cfg = () => `
+<div class="head"><div><h1>Configuración de movimiento y clic</h1>
+<p class="sub">Ajusta la respuesta del cursor a tu rango de movilidad. Los cambios se aplican al instante; pulsa Guardar para conservarlos.</p></div>
+<div style="padding:10px 16px;border-radius:12px;background:var(--c2);font-size:13px;color:var(--mut)">Guardado: <b id="saved" style="color:${ui.dirty ? 'var(--warn)' : 'var(--gr)'}">${ui.dirty ? 'cambios sin guardar' : 'sin cambios'}</b></div></div>
+<div class="row">
+ <div class="card" style="flex:1 1 440px"><div class="ct"><span class="ms">speed</span>Control de Movimiento del Cursor</div>
+  ${slider('sens')}${slider('max_speed')}${slider('dead_px')}
+  <div class="sl"><b>Punto que mueve el cursor</b><div class="hint">Con «Nudillos» doblar el índice para pellizcar ya no arrastra el cursor.</div>
+  <div class="seg">${[['nudillos', 'back_hand', 'Nudillos (recomendado)'], ['indice', 'touch_app', 'Punta del índice']].map(o => `<button class="${S.cfg.anchor === o[0] ? 'on' : ''}" data-a="anchor" data-v="${o[0]}" aria-pressed="${S.cfg.anchor === o[0]}" style="flex:1;justify-content:center"><span class="ms" style="font-size:20px">${o[1]}</span>${o[2]}</button>`).join('')}</div></div>
+  <div class="tg" style="padding:16px"><span style="flex:1 1 220px"><span class="ms" style="color:var(--gr)">filter_tilt_shift</span><span><b style="font-size:15px">Filtro antitemblor</b><small>One Euro adaptativo contra micro-movimientos.</small></span></span>${sw('filter', 'Filtro antitemblor', true)}</div>
+  ${S.cfg.filter ? slider('min_cutoff') + slider('beta') : ''}
+  <div class="sl" style="flex-direction:row;align-items:center;gap:16px;flex-wrap:wrap"><div style="flex:1 1 200px"><b>Zona muerta</b><div class="hint" style="font-size:13px">Radio de reposo sin deriva (${S.cfg.dead_px} px).</div></div>
+  <svg viewBox="0 0 100 100" style="width:110px;height:110px"><circle cx="50" cy="50" r="44" fill="none" style="stroke:var(--edge)" stroke-dasharray="3 3" stroke-width="2"/><circle cx="50" cy="50" r="${Math.max(3, S.cfg.dead_px * 1.1)}" fill="color-mix(in srgb,var(--cy) 20%,transparent)" style="stroke:var(--cy)" stroke-width="2"/><circle cx="50" cy="50" r="4" style="fill:var(--gr)"/><text x="50" y="66" style="fill:var(--cy)" font-family="JetBrains Mono" font-size="7" text-anchor="middle">REPOSO</text></svg></div>
+ </div>
+ <div class="card" style="flex:1 1 380px"><div class="ct" style="justify-content:space-between"><span style="display:flex;gap:12px;align-items:center"><span class="ms">ads_click</span>Clic Izquierdo</span><span class="mono" style="font-size:12px;color:var(--cy);background:color-mix(in srgb,var(--cy) 10%,transparent);padding:3px 10px;border-radius:99px">FASE 1</span></div>
+  ${[['pinch_click', 'pinch', 'Gesto de pellizco', 'Índice + pulgar frente a la lente.', 'var(--cy)'], ['dwell_click', 'timer', 'Clic por permanencia (Dwell)', 'Clic automático al mantener quieto el puntero.', 'var(--bl)']].map(m => {
+    const v = S.cfg[m[0]];
+    return `<button data-a="tog" data-k="${m[0]}" aria-pressed="${v}" style="text-align:left;cursor:pointer;border:2px solid ${v ? 'var(--cy)' : 'transparent'};background:${v ? 'var(--c3)' : 'var(--c1)'};border-radius:14px;padding:16px;display:flex;gap:14px;align-items:flex-start;min-height:64px"><span class="ms" style="font-size:30px;color:${m[4]}">${m[1]}</span><span style="flex:1"><span style="display:block;font-size:17px;font-weight:600">${m[2]}</span><span style="display:block;font-size:13px;color:var(--mut);margin-top:4px">${m[3]}</span></span><span class="ms" style="color:${m[4]}">${v ? 'check_circle' : 'radio_button_unchecked'}</span></button>`;
+  }).join('')}
+  ${slider('dwell_ms')}${slider('debounce_ms')}${slider('dwell_radius')}
+  ${toggleRow('audio', 'volume_up', 'Confirmación auditiva', 'Beep sutil al confirmar el clic', 'var(--cy)')}
+  ${toggleRow('visual', 'blur_circular', 'Retroalimentación visual', 'Halo expansivo en el anillo al hacer clic', 'var(--gr)')}
+ </div>
+</div>
+<div class="card c3"><div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center"><div><div style="font-size:20px;font-weight:600">Campo de Prueba Dinámico</div><div class="hint">Mueve el cursor con la mano y haz clic sobre los objetivos.</div></div>
+ <div style="display:flex;gap:8px;font:12px var(--mono)"><span style="padding:4px 10px;background:var(--c2);border-radius:6px;color:var(--cy)">Modo: ${[S.cfg.pinch_click && 'Pellizco', S.cfg.dwell_click && 'Dwell'].filter(Boolean).join(' + ') || 'Ninguno'}</span><span style="padding:4px 10px;background:var(--c2);border-radius:6px;color:var(--gr)">Clics: <span id="sandN">${ui.sandClicks}</span></span></div></div>
+ <div id="sand" style="position:relative;height:280px;background:var(--bg0);border-radius:14px;overflow:hidden">
+  <div style="position:absolute;left:50%;top:50%;width:${S.cfg.dead_px * 2}px;height:${S.cfg.dead_px * 2}px;transform:translate(-50%,-50%);border-radius:50%;border:1px dashed color-mix(in srgb,var(--cy) 40%,transparent)"></div>
+  <button class="btn" data-a="sand" style="position:absolute;left:40px;top:40px;width:130px;height:110px;flex-direction:column;border-radius:16px"><span class="ms" style="font-size:32px">touch_app</span>Objetivo A</button>
+  <button class="btn" data-a="sand" style="position:absolute;right:50px;bottom:40px;width:150px;height:100px;flex-direction:column;border-radius:16px"><span class="ms" style="font-size:32px">check_circle</span>Objetivo B</button>
+  <button class="btn" data-a="sand" style="position:absolute;left:45%;top:30%;width:90px;height:70px;flex-direction:column;border-radius:14px;font-size:12px"><span class="ms">adjust</span>Pequeño</button>
+ </div></div>
+<div style="position:sticky;bottom:0;background:color-mix(in srgb,var(--bg1) 94%,transparent);backdrop-filter:blur(12px);border-radius:16px;padding:14px;display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-end;box-shadow:0 -8px 24px rgba(0,0,0,.4)">
+ <button class="btn" data-a="reset"><span class="ms" style="color:var(--dim);font-size:20px">restart_alt</span>Restablecer</button>
+ <button class="btn pri" data-a="save" id="saveBtn" style="min-height:64px;min-width:240px;font-size:18px"><span class="ms">save</span>Guardar configuración</button></div>`;
+
+const GEST = [
+  { k: 'move', icon: 'navigation', t: 'Puntero Índice', sub: 'Desplazar cursor 2D', color: 'var(--cy)', fixed: 'Mover cursor', fixedIcon: 'open_with', det: t => t.label === 'puntero' },
+  { k: 'pinch', icon: 'pinch', t: 'Pellizco Índice + Pulgar', sub: 'Landmarks #4 y #8', color: 'var(--cy)', en: 'pinch_click', act: 'pinch_action', acts: ['left', 'right', 'double', 'drag', 'none'], det: t => t.label === 'pinch' },
+  { k: 'dwell', icon: 'timelapse', t: 'Puntero Estacionario', sub: 'Permanencia · radio de anclaje', color: 'var(--gr)', en: 'dwell_click', act: 'dwell_action', acts: ['left', 'right', 'double', 'none'], det: t => t.label === 'puntero' && t.progress > .9 },
+  { k: 'palm', icon: 'pan_tool', t: 'Palma Abierta', sub: 'Quieta ~1 s: pausa de descanso', color: 'var(--bl)', fixed: 'Congelar cursor', fixedIcon: 'pause', det: t => t.label === 'palma' },
+  { k: 'dbl', icon: 'repeat', t: 'Doble Pellizco Rápido', sub: '< 350 ms cadencia', color: 'var(--bl)', lock: 1 },
+  { k: 'fist', icon: 'front_hand', t: 'Puño Cerrado', sub: 'Agarre sostenido', color: 'var(--cy)', lock: 1 },
+  { k: 'face', icon: 'face', t: 'Guiño Ocular', sub: 'Face Mesh 468 pts', color: 'var(--gr)', lock: 1 },
+];
+VIEWS.map = () => {
+  const list = GEST.filter(g => ui.phase === 1 ? true : g.lock);
+  const active = GEST.filter(g => !g.lock && (!g.en || S.cfg[g.en])).length;
+  return `
+<div class="head" style="align-items:center"><div><h1>Mapeo de gestos</h1><p class="sub">Activa gestos, elige la acción de cada uno y pruébalos frente a la cámara.</p></div>
+<div class="seg">${[[1, 'verified', 'Fase 1 (MVP)'], [2, 'neurology', 'Fase 2 Pro']].map(p => `<button class="${ui.phase === p[0] ? 'on' : ''}" data-a="phase" data-v="${p[0]}" aria-pressed="${ui.phase === p[0]}" style="min-height:56px"><span class="ms" style="font-size:20px">${p[1]}</span>${p[2]}</button>`).join('')}</div></div>
+<div class="row">
+ <div style="flex:1 1 520px;min-width:0;display:flex;flex-direction:column;gap:16px">
+  <h2 style="font-size:17px">Gestos reconocibles<span class="pillg blue" style="color:var(--cy);background:color-mix(in srgb,var(--cy) 10%,transparent)">${active} activos</span></h2>
+  <div class="ggrid">${list.map(g => {
+    const en = !g.lock && (!g.en || S.cfg[g.en]), a = g.act ? ACT[S.cfg[g.act]] : [g.fixed || '—', g.fixedIcon || 'block'];
+    return `<div class="gcard ${g.lock ? 'lock' : ''} ${ui.flash === g.k ? 'flash' : ''} ${ui.testing === g.k ? 'wait' : ''}" id="g-${g.k}">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div style="display:flex;gap:12px;align-items:center"><div class="gic" style="color:${g.color}"><span class="ms">${g.icon}</span></div><div><div style="font-weight:600;font-size:15px;line-height:1.2">${g.t}</div><div style="font-size:12px;color:var(--dim);margin-top:2px">${g.sub}</div></div></div>
+    <span class="pillg ${g.lock ? 'blue' : en ? '' : 'off'}">${g.lock ? 'Fase 2 Pro' : en ? 'Activo' : 'Inactivo'}</span></div>
+    <button class="act" data-a="cycle" data-v="${g.k}" ${g.act ? '' : 'disabled style="cursor:default"'}><span style="font-size:12px;color:var(--mut)">Acción</span><span style="display:flex;gap:6px;align-items:center;font-weight:600;font-size:13px;color:${g.color}"><span class="ms" style="font-size:18px">${a[1]}</span>${a[0]}${g.act ? '<span class="ms" style="font-size:16px;color:var(--dim)">sync_alt</span>' : ''}</span></button>
+    <div style="display:flex;gap:8px"><button class="btn" data-a="test" data-v="${g.k}" style="flex:1;min-height:52px;font-size:13px"><span class="ms" style="font-size:20px;color:var(--gr)">play_arrow</span>${ui.testing === g.k ? 'Haz el gesto…' : 'Probar'}</button>
+    ${g.en ? `<button class="btn" data-a="tog" data-k="${g.en}" style="flex:1;min-height:52px;font-size:13px;font-weight:700;${en ? 'background:var(--cy2);color:var(--on-cy2)' : ''}"><span class="ms" style="font-size:20px">${en ? 'toggle_on' : 'toggle_off'}</span>${en ? 'Activado' : 'Activar'}</button>`
+      : `<button class="btn" data-a="locked" data-v="${g.k}" style="flex:1;min-height:52px;font-size:13px">${g.lock ? '<span class="ms" style="font-size:18px">lock</span>Fase 2' : '<span class="ms" style="font-size:18px">shield</span>Siempre activo'}</button>`}</div></div>`;
+  }).join('')}</div>
+  ${slider('pinch_conf', true)}${slider('dwell_ms', true)}
+  <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;background:var(--c1);border-radius:14px;padding:14px">
+   <div style="font-size:13px"><span style="color:var(--mut)">Se guarda en</span> <b style="color:var(--cy)">config.json</b></div>
+   <div style="display:flex;gap:10px"><button class="btn" data-a="reset">Restaurar valores</button><button class="btn pri" data-a="save" style="background:var(--cy2)"><span class="ms" style="font-size:20px">save</span>Guardar mapeo</button></div></div>
+ </div>
+ <div class="card c1" style="flex:0 1 330px;min-width:270px;padding:18px;position:sticky;top:0">
+  <div class="between"><span style="font-size:18px;font-weight:700">Probador en Vivo</span><span class="chip" style="font-size:11px">HUD</span></div>
+  <div style="position:relative">${feed('fMap', false)}<div class="badge m" style="right:8px;top:8px;color:var(--gr);background:color-mix(in srgb,var(--bg0) 90%,transparent);border-radius:99px;font-weight:600" id="mapLock">SIN SEÑAL</div></div>
+  <div style="background:var(--bg0);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px"><div class="mono" style="font-size:11px;color:var(--dim);letter-spacing:.06em">ÚLTIMO EVENTO</div>
+   <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span style="font-weight:600;font-size:15px" id="evName">—</span><span class="mono" style="font-size:12px;color:var(--gr);font-weight:600"><span id="evScore">0</span>%</span></div>
+   <div class="bar thin" style="background:var(--c3)"><div id="evBar" style="width:0;background:var(--gr)"></div></div></div>
+  <div style="font-size:12px;color:var(--mut)">Zona Dwell — mantén el cursor ${(S.cfg.dwell_ms / 1000).toFixed(1)} s:</div>
+  <div id="dwZone" style="position:relative;min-height:64px;border-radius:12px;background:var(--c3);overflow:hidden;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:14px">
+   <div id="dwFill" style="position:absolute;left:0;top:0;bottom:0;width:0;background:color-mix(in srgb,var(--cy) 25%,transparent)"></div><span class="ms" style="color:var(--cy);position:relative">my_location</span><span style="position:relative" id="dwTxt">Mantén el cursor aquí</span></div>
+ </div>
+</div>`;
+};
+VIEWS.map.tick = () => {
+  $('#mapLock').textContent = T.lm ? `${T.det}% LOCK` : 'SIN SEÑAL';
+  $('#evName').textContent = T.event[0]; $('#evScore').textContent = T.event[1] || T.conf; $('#evBar').style.width = (T.event[1] || T.conf) + '%';
+  if (ui.testing) {
+    const g = GEST.find(x => x.k === ui.testing);
+    if (g.det(T)) { ui.flash = g.k; ui.testing = null; toast(g.t + ' detectado ✓'); render(); setTimeout(() => { ui.flash = null; ui.view === 'map' && render(); }, 900); }
+    else if (Date.now() > ui.testUntil) { ui.testing = null; toast('No se detectó el gesto. Inténtalo de nuevo.'); render(); }
+  }
+};
+
+const TARGETS = [[15, 25, 100], [50, 50, 100], [85, 22, 80], [26, 80, 60], [76, 78, 80]];
+VIEWS.lab = () => {
+  const L = ui.lab, prec = L.hits.length + L.miss ? Math.round(L.hits.length / (L.hits.length + L.miss) * 100) : 100;
+  const avg = L.times.length ? (L.times.reduce((a, b) => a + b, 0) / L.times.length / 1000).toFixed(1) + 's' : '—';
+  return `
+<div><h1>Calibración y puntería</h1><p class="sub">Sintoniza la iluminación de la cámara y entrena la puntería con permanencia.</p></div>
+<div class="row">
+ <div class="card" style="flex:1 1 320px"><div class="between"><span class="ct" style="font-size:19px"><span class="ms">light_mode</span>Iluminación y Cámara</span><span class="pillg" id="lxState">—</span></div>
+  <div style="background:var(--c1);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px">
+   <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="mono" style="font-size:11px;color:var(--dim)">LUMINOSIDAD DE IMAGEN</span><span class="mono" style="font-size:12px;color:var(--gr)">Rango: 37–65 %</span></div>
+   <div class="mono" style="font-size:44px;font-weight:700" id="lxVal">—<span style="font-size:16px;color:var(--mut)"> %</span></div>
+   <div style="position:relative;height:14px;border-radius:99px;background:linear-gradient(90deg,var(--warn) 0%,var(--warn) 37%,var(--gr) 37%,var(--gr) 65%,var(--err) 65%)"><div id="lxMark" style="position:absolute;top:-4px;left:0;width:6px;height:22px;margin-left:-3px;border-radius:3px;background:#fff;transition:left .3s"></div></div></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">${[['Detección', 'lxDet'], ['Mano', 'lxSide'], ['Captura', 'lxFps']].map(t => `<div style="flex:1 1 110px;background:var(--c1);border-radius:10px;padding:10px 12px"><div style="font-size:12px;color:var(--dim)">${t[0]}</div><div class="mono" style="font-weight:600;color:var(--cy);font-size:14px" id="${t[1]}">—</div></div>`).join('')}</div>
+  <button class="btn pri" data-a="calib" id="calBtn" style="min-height:60px;font-size:15px"><span class="ms">auto_fix_high</span>Calibrar exposición automática</button>
+ </div>
+ <div class="card" style="flex:1.5 1 420px"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><span class="ct" style="font-size:19px"><span class="ms">target</span>Laboratorio de Puntería</span><span class="mono" style="font-size:12px;padding:4px 10px;background:var(--bg1);border-radius:6px;color:var(--cy)">Dwell ${(S.cfg.dwell_ms / 1000).toFixed(1)} s</span></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">${[['Precisión', prec + '%', 'var(--gr)'], ['Tiempo promedio', avg, 'var(--cy)'], ['Aciertos', L.hits.length + '/5', 'var(--fg)']].map(t => `<div style="flex:1 1 110px;background:var(--c1);border-radius:10px;padding:12px;text-align:center"><div style="font-size:12px;color:var(--dim)">${t[0]}</div><div class="mono" style="font-size:24px;font-weight:700;color:${t[2]}">${t[1]}</div></div>`).join('')}</div>
+  <div id="labArea" data-a="labmiss" style="position:relative;height:300px;background:var(--bg0);border-radius:14px;overflow:hidden">
+   ${TARGETS.map((t, i) => { const hit = L.hits.includes(i); return `<button class="target ${hit ? 'hit' : ''}" data-a="labhit" data-v="${i}" data-t="${i}" aria-label="Diana de ${t[2]} px${hit ? ', acertada' : ''}" style="left:${t[0]}%;top:${t[1]}%;width:${t[2]}px;height:${t[2]}px"><span class="fill"></span><span class="ms" style="position:relative;color:${hit ? 'var(--gr)' : 'var(--cy)'}">${hit ? 'check_circle' : 'adjust'}</span><span class="mono" style="position:relative;font-size:11px;color:var(--mut)">${t[2]}px</span></button>`; }).join('')}
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-size:13px;color:var(--mut);display:flex;gap:8px;align-items:center"><span class="ms" style="color:var(--gr);font-size:20px">check_circle</span>${L.hits.length === 5 ? '¡Ronda completa!' : 'Pasa el cursor sobre una diana y mantenlo quieto (o haz pellizco).'}</span>
+   <button class="btn" data-a="labreset"><span class="ms" style="font-size:20px">restart_alt</span>Reiniciar práctica</button></div>
+ </div>
+</div>
+<div><h2 style="margin-bottom:14px"><span class="ms" style="color:var(--cy)">accessibility_new</span>Guía Rápida de Posturas</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">${[['straighten', '50 cm', 'Distancia recomendada', 'Mantén unos 50 cm entre la palma y la cámara para que los 21 puntos se detecten con nitidez.'], ['chair', 'Codo 90°', 'Apoyo articular de codo', 'Descansa el antebrazo sobre la mesa o un reposabrazos para reducir micro-temblores y fatiga.'], ['light_mode', 'Luz frontal', 'Sin contraluz', 'Evita ventanas o focos detrás de ti: la mano pierde contraste y la detección baja.']].map(p => `<div class="card c1" style="padding:20px;gap:10px"><div class="between"><span class="ms" style="color:var(--cy)">${p[0]}</span><span class="mono" style="color:var(--gr);font-weight:600;font-size:14px">${p[1]}</span></div><div style="font-size:17px;font-weight:600">${p[2]}</div><div class="hint" style="line-height:1.5">${p[3]}</div></div>`).join('')}</div></div>`;
+};
+VIEWS.lab.tick = () => {
+  const ok = brightOk(), col = ok ? 'var(--gr)' : (T.bright < 95 ? 'var(--warn)' : 'var(--err)');
+  $('#lxVal').firstChild.textContent = brightPct(); $('#lxVal').style.color = col;
+  $('#lxMark').style.left = brightPct() + '%';
+  const st = $('#lxState'); st.textContent = ok ? 'ÓPTIMO' : (T.bright < 95 ? 'POCA LUZ' : 'SOBREEXPUESTO'); st.className = 'pillg' + (ok ? '' : ' bad');
+  $('#lxDet').textContent = T.lm ? T.det + ' %' : 'Sin mano'; $('#lxSide').textContent = T.side || '—'; $('#lxFps').textContent = Math.round(T.fps) + ' FPS';
+  const b = $('#calBtn'); b.disabled = T.calibrating; setHTML(b, T.calibrating ? '<span class="ms">hourglass_top</span>Calibrando…' : '<span class="ms">auto_fix_high</span>Calibrar exposición automática');
+  if (T.calib_result) toast(brightOk() ? 'Exposición calibrada ✓' : 'Calibración terminada: revisa la iluminación de la sala');
+};
+function labHit(i) {
+  const L = ui.lab; if (L.hits.includes(i)) return;
+  clearTimeout(L.tm); L.times.push(L.hover === i ? Date.now() - L.t0 : S.cfg.dwell_ms); L.hits.push(i); L.hover = null;
+  if (L.hits.length === 5) { toast('¡Ronda completa!'); setTimeout(() => { L.hits = []; ui.view === 'lab' && render(); }, 2000); }
+  render();
+}
+
+VIEWS.road = () => {
+  const f1 = ui.roadTab === 'f2' ? .25 : 1, f2 = ui.roadTab === 'f1' ? .25 : 1;
+  const M = [['FRECUENCIA DE CAPTURA', 'speed', 'Tasa de fotogramas', '30 FPS', '≥ 60 FPS'], ['TIEMPO DE INFERENCIA', 'timer', 'Latencia de respuesta', '< 200 ms', '< 100 ms'], ['RADIO DE DISPERSIÓN', 'adjust', 'Precisión del puntero', '±50 px', '±20 px'], ['CONDICIONES LUMÍNICAS', 'wb_sunny', 'Iluminación de la sala (especificación, no medida)', '100–1000 lux', '50–3000 lux'], ['ECOSISTEMA', 'devices', 'Plataformas', 'Windows 10/11', 'Multiplataforma'], ['CARGA DE PROCESAMIENTO', 'memory', 'Consumo de CPU', '< 25%', '< 15%']];
+  const X = [['Clics soportados', 'Acciones sobre elementos de la interfaz.', 'Izquierdo por pellizco y dwell; derecho, doble y arrastre armados', 'var(--gr)', 'Gestos dedicados por tipo de clic'], ['Acciones complejas', 'Interacciones espaciales multiestado.', 'Arrastre desde la barra de acciones', 'var(--gr)', 'Selección sostenida y scroll gestual'], ['Perfiles personalizados', 'Sensibilidad y filtros por contexto.', 'Configuración global + 3 modos rápidos', 'var(--gr)', 'Perfiles automáticos por app'], ['Detección multimodal', 'Rasgos gestuales y corporales.', 'Mano (puntero, pellizco, palma) + modelo personal', 'var(--gr)', 'Gestos faciales, eye-tracking y voz'], ['Gobernanza y auditoría', 'Transparencia algorítmica.', 'Registros de entrenamiento reproducibles (runs/)', 'var(--mut)', 'Licencia abierta y SDK público']];
+  return `
+<div class="head"><div><h1>Hoja de ruta</h1><p class="sub">Qué hace hoy la Fase 1 y qué se planea para la Fase 2 Pro.</p></div>
+<div class="seg">${[['sla', 'Vista integrada'], ['f1', 'Fase 1'], ['f2', 'Fase 2 Pro']].map(r => `<button class="${ui.roadTab === r[0] ? 'on' : ''}" data-a="road" data-v="${r[0]}" aria-pressed="${ui.roadTab === r[0]}">${r[1]}</button>`).join('')}</div></div>
+<div class="row" style="gap:16px">
+ <div class="card" style="flex:1 1 300px;padding:20px;opacity:${f1}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="mono" style="font-size:12px;color:var(--gr);font-weight:600">● FASE 1: MVP FUNCIONAL</span><span class="pillg">IMPLEMENTADO</span></div><p class="hint" style="margin:0;line-height:1.5">Python + MediaPipe (CNN local en CPU) + clasificador personal entrenable, con inyección nativa Win32 (SendInput). Sin nube.</p></div>
+ <div class="card" style="flex:1 1 300px;padding:20px;opacity:${f2}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="mono" style="font-size:12px;color:var(--cy);font-weight:600">● FASE 2: ALCANCE PRO</span><span class="pillg blue">HOJA DE RUTA</span></div><p class="hint" style="margin:0;line-height:1.5">Motor multimodelo con aceleración Vulkan/DirectML y reconocimiento de micromovimientos.</p></div>
+</div>
+<h2>Objetivos técnicos</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">${M.map(m => `<div class="card" style="padding:20px;gap:10px"><div class="between"><span class="mono" style="font-size:11px;letter-spacing:.06em;color:var(--dim)">${m[0]}</span><span class="ms" style="color:var(--cy);font-size:20px">${m[1]}</span></div><div style="font-size:18px;font-weight:600">${m[2]}</div>
+ <div style="opacity:${f1}"><div class="kv mono"><span style="color:var(--gr)">F1</span><span>${m[3]}</span></div></div>
+ <div style="opacity:${f2}"><div class="kv mono"><span style="color:var(--cy)">F2 Pro</span><span>${m[4]}</span></div></div></div>`).join('')}</div>
+<h2>Capacidades</h2>
+<div class="tbl"><div class="tr h"><span style="color:var(--dim)">MÓDULO</span><span style="color:var(--gr);opacity:${f1}">FASE 1 (ACTUAL)</span><span style="color:var(--cy);opacity:${f2}">FASE 2 (PRO)</span></div>
+${X.map(r => `<div class="tr"><span><b style="display:block;font-size:14px">${r[0]}</b><span style="color:var(--dim)">${r[1]}</span></span><span style="opacity:${f1};color:${r[3]}">${r[2]}</span><span style="opacity:${f2};color:var(--bl)">${r[4]}</span></div>`).join('')}</div>
+<div class="card" style="flex-direction:row;flex-wrap:wrap;gap:24px;padding:24px">
+ <div style="flex:1 1 280px"><h3 style="margin:0 0 8px;font-size:24px">¿Te interesa la Fase 2 Pro?</h3><p class="hint" style="margin:0;line-height:1.5">Registra tu interés. Se guarda solo en este equipo (data/interes_fase2.jsonl); no se envía nada por Internet.</p></div>
+ <div id="beta" style="flex:1 1 300px;background:var(--c1);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:10px">${ui.betaSent ? `<span class="ms" style="color:var(--gr);font-size:36px">task_alt</span><b style="font-size:18px">Interés registrado</b><span class="hint">Guardado localmente.</span><button class="btn" data-a="betareset">Registrar otro</button>` : `
+  <input type="text" id="bName" placeholder="Nombre o institución" aria-label="Nombre o institución" maxlength="120"><input type="email" id="bMail" placeholder="correo@organizacion.org" aria-label="Correo electrónico" maxlength="200">
+  <button class="btn" data-a="role" style="justify-content:space-between;background:var(--bg1);border:1px solid var(--edge);min-height:48px;font-weight:400" id="bRole" aria-label="Rol (clic para cambiar)">${ROLES[ui.role || 0]}<span class="ms" style="font-size:18px;color:var(--dim)">unfold_more</span></button>
+  <div style="font-size:12px;color:var(--red);min-height:16px" id="bErr" role="alert"></div><button class="btn pri" data-a="beta">Registrar interés en Fase 2</button>`}</div></div>`;
+};
+const ROLES = ['Terapeuta ocupacional / Fisioterapeuta', 'Ingeniero biomédico', 'Usuario con necesidades de accesibilidad', 'Investigador / Desarrollador'];
+
+VIEWS.train = () => {
+  const r = ui.trainRes;
+  let verdict = '';
+  if (r && !r.ok) verdict = `<div class="pillg bad" style="padding:10px 14px;border-radius:10px;white-space:normal">${esc(r.error)}</div>`;
+  if (r && r.ok) {
+    const m = r.m, rec = Object.fromEntries(m.labels.map(k => [k, m.report[k].recall])), worst = m.labels.reduce((a, b) => rec[a] <= rec[b] ? a : b);
+    const lvl = m.accuracy >= .95 && rec[worst] >= .9 ? ['Excelente: listo para usar', 'var(--gr)', 'verified'] : m.accuracy >= .85 ? ['Aceptable: graba más rondas variadas', 'var(--warn)', 'trending_up'] : ['Insuficiente: necesita más datos', 'var(--err)', 'error'];
+    verdict = `<div style="display:flex;gap:10px;align-items:center;font-size:17px;font-weight:700;color:${lvl[1]}"><span class="ms">${lvl[2]}</span>${lvl[0]}</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">${[['Precisión', (m.accuracy * 100).toFixed(1) + '%', 'var(--gr)'], ['Reglas base', (m.rules_baseline_accuracy * 100).toFixed(1) + '%', 'var(--mut)'], ['Rondas', m.n_sessions, 'var(--cy)']].map(t => `<div style="flex:1 1 90px;background:var(--c1);border-radius:10px;padding:10px;text-align:center"><div style="font-size:12px;color:var(--dim)">${t[0]}</div><div class="mono" style="font-size:20px;font-weight:700;color:${t[2]}">${t[1]}</div></div>`).join('')}</div>
+    ${m.labels.map(k => `<div><div class="kv mono"><span>${k}${k === worst ? ' · más débil' : ''}</span><span>${Math.round(rec[k] * 100)}%</span></div><div class="bar thin"><div style="width:${rec[k] * 100}%;background:${rec[k] >= .9 ? 'var(--gr)' : 'var(--warn)'}"></div></div></div>`).join('')}
+    <div class="hint">${m.promoted_to_latest ? '✔ Modelo activado: ya lo estás usando.' : '✘ No activado: las reglas simples rinden mejor; se mantiene lo anterior.'}</div>`;
+  }
+  return `
+<div class="head"><div><h1>Entrenamiento con tu mano</h1><p class="sub">Graba rondas guiadas de los 4 gestos y entrena un clasificador a tu medida. Solo se guardan coordenadas, nunca imágenes.</p></div>
+<div style="padding:8px 14px;border-radius:10px;background:var(--c2);font:12px var(--mono)"><span style="color:var(--dim)">MOTOR:</span> <span style="color:var(--cy);font-weight:600" id="trSrc"></span></div></div>
+<div class="row">
+ <div style="flex:1 1 480px;min-width:0;display:flex;flex-direction:column;gap:14px">
+  ${feed('fTrain', true)}
+  <div class="card c1" style="gap:10px"><div id="trMsg" style="font-size:20px;font-weight:700;white-space:pre-line;min-height:56px">Pulsa «Iniciar grabación» y sigue las instrucciones.</div>
+   <div class="bar"><div id="trBar" style="width:0"></div></div>
+   <div class="mono" style="font-size:12px;color:var(--mut)" id="trTip">Consejo: en cada ronda cambia un poco la distancia, el ángulo o la luz.</div></div>
+ </div>
+ <div style="flex:1 1 360px;min-width:0;display:flex;flex-direction:column;gap:16px">
+  <div class="card"><div class="ct"><span class="ms">radio_button_checked</span>1 · Grabar</div>
+   <div style="display:flex;gap:10px;align-items:center"><input type="text" id="trUser" value="${esc(ui.user)}" placeholder="Tu nombre" aria-label="Tu nombre (identifica la grabación)" maxlength="40"></div>
+   <div class="sl" style="flex-direction:row;align-items:center;justify-content:space-between"><b>Rondas</b><div style="display:flex;gap:10px;align-items:center"><button class="sq" data-a="rounds" data-d="-1" aria-label="Menos rondas"><span class="ms">remove</span></button><span class="mono" style="font-size:22px;font-weight:700;min-width:36px;text-align:center">${ui.rounds}</span><button class="sq" data-a="rounds" data-d="1" aria-label="Más rondas"><span class="ms">add</span></button></div></div>
+   <div class="hint">≈ ${ui.rounds} min. 4 gestos por ronda: reposo (puño), pinch, palma y puntero.</div>
+   ${ui.recording ? `<button class="btn dan" data-a="cancelrec" style="min-height:64px"><span class="ms">stop_circle</span>Cancelar grabación</button>` : `<button class="btn pri" data-a="rec" style="min-height:64px;font-size:16px"><span class="ms">fiber_manual_record</span>Iniciar grabación guiada</button>`}
+  </div>
+  <div class="card"><div class="ct"><span class="ms">dataset</span>2 · Datos grabados</div>
+   ${S.files.length ? S.files.map(f => `<div style="display:flex;gap:10px;align-items:center;background:var(--c1);border-radius:10px;padding:10px 12px"><span class="ms" style="color:var(--cy)">description</span><span style="flex:1;min-width:0"><b style="display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name)}</b><small class="mono" style="color:var(--dim);font-size:12px">${f.samples} muestras · ${f.rounds} rondas</small></span><button class="sq" style="width:48px;height:48px" data-a="discard" data-v="${esc(f.name)}" title="Descartar (se mueve a data/discarded)" aria-label="Descartar ${esc(f.name)}"><span class="ms" style="color:var(--red)">delete</span></button></div>`).join('') : '<div class="hint">Aún no hay grabaciones.</div>'}
+  </div>
+  <div class="card"><div class="ct"><span class="ms">neurology</span>3 · Entrenar</div>
+   ${toggleRow('auto_train', 'autorenew', 'Entrenar al terminar cada grabación', 'El modelo usa siempre todos tus datos', 'var(--cy)')}
+   <button class="btn pri" data-a="train" ${ui.trainBusy || !S.files.length ? 'disabled' : ''} style="min-height:60px;font-size:16px"><span class="ms">${ui.trainBusy ? 'hourglass_top' : 'model_training'}</span>${ui.trainBusy ? 'Entrenando…' : 'Entrenar modelo con estos datos'}</button>
+   ${verdict}
+  </div>
+  ${S.runs.length ? `<div class="tbl"><div class="tr h" style="grid-template-columns:1.6fr .8fr .8fr .6fr"><span>ENTRENAMIENTO</span><span>PRECISIÓN</span><span>REGLAS</span><span>ACTIVO</span></div>${S.runs.slice(0, 6).map(r => `<div class="tr mono" style="grid-template-columns:1.6fr .8fr .8fr .6fr;font-size:12px;padding:12px 20px"><span>${esc(r.run)}</span><span style="color:var(--gr)">${(r.acc * 100).toFixed(1)}%</span><span>${(r.rules * 100).toFixed(1)}%</span><span>${r.promoted ? '✔' : '—'}</span></div>`).join('')}</div>` : ''}
+ </div>
+</div>`;
+};
+VIEWS.train.tick = () => {
+  $('#trSrc').textContent = T.source === 'modelo' ? 'MODELO PERSONAL' : 'REGLAS GEOMÉTRICAS';
+  const st = T.rec;
+  if (st) {
+    if (!ui.recording) { ui.recording = true; render(); return; }
+    $('#trMsg').textContent = st.text; $('#trBar').style.width = (st.progress * 100) + '%';
+    $('#trTip').textContent = st.phase === 'rec' ? (T.lm ? '● Mano detectada: grabando' : '○ No veo tu mano: acércala al centro') : 'Ronda ' + st.round + ': ' + st.tip;
+  } else if (ui.recording) { ui.recording = false; render(); }
+};
+
+const TUT = [
+  ['waving_hand', 'Bienvenido a GestureFlow', `Controlas el cursor con la mano frente a la cámara. Todo se procesa en tu equipo.<br><br>
+   <b>☝ Puntero</b> (solo el índice extendido): mueve el cursor. Si lo dejas quieto se hace clic.<br><b>🤏 Pellizco</b> (pulgar con índice): clic inmediato.<br>
+   <b>🖐 Palma abierta y quieta</b>: pausa de descanso; al moverla, el cursor vuelve a seguirte.<br><b>✊ Reposo</b> (puño): no hace nada.<br><br>Cada paso se completa con tu mano; puedes omitir cualquiera.`],
+  ['open_with', '1 · Mover el cursor', 'Extiende el índice y mueve la mano despacio. El cursor sigue tus nudillos (no la punta del dedo): así, al pellizcar para hacer clic, no se desvía. Trabaja dentro del rectángulo punteado del Monitor (la zona activa). Lleva el cursor hasta el cuadro verde.', `<div id="tZone" style="height:120px;border-radius:14px;background:var(--gr2);color:var(--on-gr);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700">Lleva el cursor aquí</div>`],
+  ['ads_click', '2 · Hacer clic', 'Deja el cursor <b>quieto sobre el botón</b>: se llena el anillo y se hace clic. O junta pulgar e índice (pellizco). Haz 3 clics.', `<button class="btn pri" data-a="tutclick" style="min-height:90px;font-size:20px" id="tBtn">Haz clic aquí (0/3)</button>`],
+  ['linear_scale', '3 · Mover un control deslizante', 'No hace falta arrastrar: <b>un clic en la barra salta a ese punto</b>, y los botones − / + ajustan paso a paso. Deja el valor cerca de 75.', `<div class="sl"><div class="slh"><b>Valor de práctica</b><span class="chip" id="tVal">10</span></div><div class="slr"><button class="sq" data-a="tutbump" data-d="-5" aria-label="Disminuir"><span class="ms">remove</span></button><input type="range" min="0" max="100" value="10" id="tRange" aria-label="Valor de práctica"><button class="sq" data-a="tutbump" data-d="5" aria-label="Aumentar"><span class="ms">add</span></button></div></div>`],
+  ['pan_tool', '4 · Pausa de descanso', 'Cuando te canses, abre la mano con los dedos extendidos (palma) y mantenla quieta 1 segundo: el cursor se queda quieto y puedes descansar el brazo. En cuanto la mueves, el cursor vuelve a seguirte. Bajar el brazo fuera de la cámara también lo deja quieto.', `<div class="card c1" id="tPalm" style="font-size:18px;font-weight:600">Esperando palma abierta…</div>`],
+  ['emergency_home', '5 · Parada de emergencia', 'Si el cursor se comporta raro, pulsa <span class="kbd">F9</span> o <span class="kbd">Ctrl + Alt + P</span>: pausa o reanuda todo al instante. También tienes el botón Pausar arriba y el icono de la bandeja.<br><br>Ajusta el temblor y el tiempo de permanencia en Configuración.'],
+  ['model_training', '6 · Entrena tu modelo', 'El reconocimiento mejora mucho entrenándolo con tu propia mano. Graba 3 rondas guiadas (≈ 1 min cada una: la pantalla te dice qué gesto hacer) y GestureFlow entrena tu modelo solo al terminar. Solo se guardan coordenadas de la mano, nunca imágenes. Puedes repetirlo cuando quieras en Entrenamiento.', `<button class="btn pri" data-a="tutrec" style="min-height:60px">Grabar 3 rondas y entrenar (≈ 3 min) <span class="ms">arrow_forward</span></button>`],
+];
+VIEWS.tut = () => {
+  const i = ui.tut, s = TUT[i];
+  return `
+<div><h1>Tutorial</h1><p class="sub">${i ? `Paso ${i} de ${TUT.length - 1}` : 'Introducción'}</p></div>
+<div style="display:flex;gap:6px">${TUT.map((_, j) => `<div style="flex:1;height:6px;border-radius:99px;background:${j < i || ui.tutOk[j] ? 'var(--gr)' : j === i ? 'var(--cy)' : 'var(--c4)'}"></div>`).join('')}</div>
+<div class="card" style="max-width:860px;gap:18px;padding:28px"><div style="display:flex;gap:16px;align-items:center"><div class="gic" style="width:64px;height:64px;border-radius:14px;color:var(--cy)"><span class="ms" style="font-size:36px">${s[0]}</span></div><h2 style="font-size:26px">${s[1]}</h2>${ui.tutOk[i] ? '<span class="pillg" style="margin-left:auto;font-size:13px">✓ ¡HECHO!</span>' : ''}</div>
+ <div style="font-size:16px;line-height:1.6;color:var(--mut)">${s[2]}</div>${s[3] || ''}</div>
+<div style="display:flex;gap:12px;max-width:860px"><button class="btn" data-a="tutnav" data-d="-1" ${i ? '' : 'disabled'} style="min-height:60px;flex:1"><span class="ms">arrow_back</span>Atrás</button>
+<button class="btn pri" data-a="tutnav" data-d="1" style="min-height:60px;flex:2;font-size:16px">${i === TUT.length - 1 ? 'Terminar' : 'Siguiente'}<span class="ms">arrow_forward</span></button></div>`;
+};
+VIEWS.tut.tick = () => {
+  if (ui.tut !== 4) return;
+  if (T.label === 'palma') { ui.palmaSince = ui.palmaSince || Date.now(); if (Date.now() - ui.palmaSince > 1000 && !ui.tutOk[4]) { ui.tutOk[4] = true; render(); $('#tPalm').textContent = '✓ Palma detectada: cursor en pausa de descanso.'; } }
+  else ui.palmaSince = 0;
+};
+function tutDone(i) { if (!ui.tutOk[i]) { ui.tutOk[i] = true; render(); } }
+
+/* ---------- render principal ---------- */
+/* el re-render reemplaza el HTML: guarda qué control tenía el foco para devolvérselo */
+function focusKey() {
+  const f = document.activeElement; if (!f || f === document.body) return null;
+  if (f.id) return '#' + CSS.escape(f.id);
+  const at = ['a', 'v', 'k', 'd'].filter(x => f.dataset[x] != null).map(x => `[data-${x}="${CSS.escape(f.dataset[x])}"]`).join('');
+  return at ? f.tagName.toLowerCase() + at : null;
+}
+function render() {
+  const fk = focusKey();
+  if (OVL !== 'main') { renderOverlay(); } else {
+    const m = $('#main'); if (!m) return;
+    const st = m.scrollTop; m.innerHTML = VIEWS[ui.view](); if (ui.lastView === ui.view) m.scrollTop = st; ui.lastView = ui.view;
+    $$('.nb').forEach(b => { const o = b.dataset.v === ui.view; b.classList.toggle('on', o); o ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'); });
+    $$('.ob').forEach(b => { const o = !!S.overlays[b.dataset.v]; b.classList.toggle('on', o); b.setAttribute('aria-pressed', o); });
+    bindView(); syncFeeds(); onTick(T, true);
+  }
+  const n = fk && document.activeElement === document.body && $(fk); if (n) n.focus({ preventScroll: true });
+}
+/* los iconos son ligaduras de texto («pause_circle»): ocultarlos a lectores de pantalla */
+new MutationObserver(rs => rs.forEach(r => r.addedNodes.forEach(n => {
+  if (n.nodeType !== 1) return; if (n.classList.contains('ms')) n.setAttribute('aria-hidden', 'true');
+  n.querySelectorAll('.ms').forEach(e => e.setAttribute('aria-hidden', 'true'));
+}))).observe(document.body, { childList: true, subtree: true });
+function bindView() {
+  $$('#main input[type=range][data-k]').forEach(r => r.addEventListener('input', () => { const k = r.dataset.k, d = SL[k]; setCfg(k, rnd(k, r.value)); }));
+  const tz = $('#tZone'); if (tz) tz.addEventListener('mouseenter', () => { tz.textContent = '✓ ¡Perfecto!'; tutDone(1); });
+  const tr = $('#tRange'); if (tr) tr.addEventListener('input', () => { $('#tVal').textContent = tr.value; if (Math.abs(tr.value - 75) <= 8) tutDone(3); });
+  const tu = $('#trUser'); if (tu) tu.addEventListener('input', () => ui.user = tu.value);
+  $$('.target').forEach(t => {
+    const i = +t.dataset.t;
+    t.addEventListener('mouseenter', () => { const L = ui.lab; if (L.hits.includes(i)) return; L.hover = i; L.t0 = Date.now(); const f = t.querySelector('.fill'); f.style.transition = `height ${S.cfg.dwell_ms}ms linear`; f.style.height = '100%'; clearTimeout(L.tm); L.tm = setTimeout(() => labHit(i), S.cfg.dwell_ms); });
+    t.addEventListener('mouseleave', () => { const L = ui.lab; clearTimeout(L.tm); L.hover = null; const f = t.querySelector('.fill'); if (!L.hits.includes(i)) { f.style.transition = 'none'; f.style.height = '0'; } });
+  });
+  const dz = $('#dwZone');
+  if (dz) {
+    dz.addEventListener('mouseenter', () => { const f = $('#dwFill'); f.style.transition = `width ${S.cfg.dwell_ms}ms linear`; f.style.width = '100%'; $('#dwTxt').textContent = 'Fijando…'; clearTimeout(ui.dwT); ui.dwT = setTimeout(() => { dz.style.background = 'var(--cy2)'; $('#dwTxt').textContent = '¡CLIC CONFIRMADO!'; toast('¡Clic por permanencia confirmado!'); }, S.cfg.dwell_ms); });
+    dz.addEventListener('mouseleave', () => { clearTimeout(ui.dwT); const f = $('#dwFill'); f.style.transition = 'width .15s'; f.style.width = '0'; dz.style.background = 'var(--c3)'; $('#dwTxt').textContent = 'Mantén el cursor aquí'; });
+  }
+}
+
+/* aviso de cámara: error reportado por Python o ausencia de datos durante >3.5 s */
+let camErr = '', lastTick = Date.now();
+function updateBanner(forceMsg) {
+  const b = $('#camBanner'); if (!b) return;
+  const stale = Date.now() - lastTick > 3500, show = !!forceMsg || !!camErr || stale;
+  b.hidden = !show; b.style.display = show ? 'flex' : 'none';
+  if (show) $('#camMsg').textContent = forceMsg || camErr || 'Sin señal de la cámara: se está reintentando…';
+}
+setInterval(updateBanner, 1000);
+function onTick(t, fromRender) {
+  if (!fromRender) { T = t; lastTick = Date.now(); if (camErr) camErr = ''; updateBanner(); }
+  if (document.hidden) return;  // ventana oculta o minimizada: guardar los datos y no tocar el DOM 30 veces/s
+  if (!fromRender && T.other_side && OVL === 'main' && Date.now() - (ui.otherToast || 0) > 15000) {
+    ui.otherToast = Date.now(); toast(`Veo tu mano ${T.other_side.toLowerCase()} pero sigo la ${String(S.cfg.hand).toLowerCase()}: si usas la ${T.other_side.toLowerCase()}, cámbiala en Monitor`);
+  }
+  if (OVL !== 'main') return tickOverlay();
+  /* dibujar antes de escribir en el DOM: drawFeed mide el contenedor y así no fuerza un layout extra por tick */
+  if (!fromRender) $$('.feed').forEach(drawFeed);
+  const o = on();
+  const dot = o ? 'var(--gr)' : 'var(--err)';
+  ['#pDot', '#sDot'].forEach(s => { const e = $(s); if (e) e.style.background = dot; });
+  if (!$('#pTxt')) return;
+  $('#pTxt').textContent = T.rec ? 'Grabando datos' : o ? 'Sistema Activo' : 'Sistema Pausado';
+  $('#pTele').textContent = `${Math.round(T.fps)} FPS • ${T.latency}ms • luz ${brightPct()}%`;
+  const p = $('#pauseTop'); p.style.color = T.paused ? 'var(--gr)' : 'var(--red)'; p.style.borderColor = T.paused ? 'color-mix(in srgb,var(--gr) 50%,transparent)' : 'color-mix(in srgb,var(--red) 50%,transparent)';
+  setHTML(p, `<span class="ms">${T.paused ? 'play_circle' : 'pause_circle'}</span><span>${T.paused ? 'Reanudar [F9]' : 'Pausar [F9]'}</span>`);
+  $('#sCam').textContent = camName() + (T.fps ? ' conectada' : ' iniciando…');
+  $('#sTag').textContent = T.rec ? 'Grabando datos' : T.paused ? 'Motor en pausa' : (T.armed ? 'Próximo clic: ' + ACT[T.armed][0].toLowerCase() : 'Motor listo');
+  setHTML($('#engine'), `Motor: ${T.source === 'modelo' ? 'modelo personal' : 'reglas geométricas'}<br>SendInput Win32 ${T.paused ? 'en pausa' : 'activo'}`);
+  const v = VIEWS[ui.view]; if (v.tick) v.tick();
+}
+
+/* ---------- paneles flotantes ---------- */
+const AI = [['left', 'ads_click', 'Clic izquierdo', 'Acción primaria normal'], ['right', 'contextual_token', 'Clic derecho', 'Menú contextual'], ['double', 'double_arrow', 'Doble clic', 'Ejecución 2x'], ['drag', 'open_with', 'Arrastrar y soltar', 'Sujeta en el próximo clic, suelta en el siguiente'], ['middle', 'adjust', 'Clic central', 'Rueda / pestaña nueva'], ['kbd', 'keyboard', 'Teclado en pantalla', 'Teclado de Windows con permanencia'], ['lock', 'pause_circle', 'Bloqueo de cursor', 'Pausa de fatiga']];
+function renderOverlay() {
+  const r = $('#root');
+  if (OVL === 'actions') r.innerHTML = `<div class="panel">
+   <div class="between"><div style="display:flex;gap:10px;align-items:center"><img src="logo.svg" style="width:40px;height:40px"><div><div class="mono" style="font-weight:700;font-size:14px">GESTUREFLOW</div><div class="mono" style="font-size:11px;color:var(--cy)">BARRA DE ACCIONES</div></div></div>
+   <button class="sq" style="width:44px;height:44px;background:var(--c2)" data-a="ovl" data-v="actions" aria-label="Cerrar"><span class="ms" style="font-size:20px">close</span></button></div>
+   <div style="background:var(--c2);border-radius:12px;padding:10px 14px"><div class="mono" style="display:flex;justify-content:space-between;font-size:12px"><span id="armTxt">Selecciona una acción</span><span style="color:var(--cy)">${(S.cfg.dwell_ms / 1000).toFixed(1)} s</span></div><div class="bar thin" style="margin-top:8px"><div id="armBar" style="width:0;background:var(--cy)"></div></div></div>
+   ${AI.map(a => `<button class="ai ${a[0] === 'lock' ? 'dan' : ''}" data-a="arm" data-v="${a[0]}" id="ai-${a[0]}"><span class="ms">${a[1]}</span><span style="flex:1"><b>${a[2]}</b><small>${a[3]}</small></span><span class="mono" style="font-size:11px;font-weight:700" data-tag></span></button>`).join('')}
+   <div style="background:var(--c2);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px"><div class="mono" style="font-size:13px;font-weight:600;color:var(--gr)">Sugerencia ergonómica</div><div class="hint" style="font-size:13px" id="ergo"></div></div></div>`;
+  if (OVL === 'hud') r.innerHTML = `<div class="panel" style="padding:22px;gap:16px;border-radius:22px;background:color-mix(in srgb,var(--c2) 97%,transparent)">
+   <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap" data-drag><div style="display:flex;gap:12px;align-items:center" data-drag><span class="dot" id="hDot" style="width:12px;height:12px"></span><div data-drag><div style="font-size:22px;font-weight:700">GestureFlow HUD</div><div class="mono" style="font-size:11px;color:var(--dim)">PANEL FLOTANTE · SIEMPRE VISIBLE</div></div></div>
+   <div class="mono" style="display:flex;gap:8px;font-size:12px;align-items:center"><span id="hJit" class="hpill">±0px</span><span id="hFps" class="hpill">0 FPS</span><span id="hLux" class="hpill">0%</span>
+   <button class="sq" style="width:44px;height:44px" data-a="ovl" data-v="hud" aria-label="Cerrar"><span class="ms" style="font-size:20px">close</span></button></div></div>
+   <div style="display:flex;flex-wrap:wrap;gap:16px"><div style="flex:1 1 260px;position:relative">${feed('fHud', false)}<span class="badge m" style="right:8px;top:8px;color:var(--gr);background:color-mix(in srgb,var(--bg0) 90%,transparent);border-radius:99px" id="hLock">SIN SEÑAL</span></div>
+   <div style="flex:1 1 260px;display:flex;flex-direction:column;gap:10px">
+    <div style="background:var(--c1);border-radius:12px;padding:12px 14px"><div class="mono" style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--dim)">GESTO DETECTADO</span><span style="color:var(--cy);font-weight:600" id="hGest">—</span></div><div class="bar thin" style="margin:8px 0"><div id="hPress" style="width:0;background:var(--cy)"></div></div><div style="display:flex;justify-content:space-between;font-size:13px"><span>Activación de pellizco</span><span class="mono" id="hPressT">0%</span></div></div>
+    <div style="background:var(--c1);border-radius:12px;padding:8px 8px 8px 14px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:14px">Mano activa<div style="display:flex;gap:4px;background:var(--bg1);padding:4px;border-radius:10px">${['Izquierda', 'Derecha'].map(h => `<button data-a="hand" data-v="${h}" aria-pressed="${S.cfg.hand === h}" class="mono" style="border:0;cursor:pointer;border-radius:7px;height:40px;padding:0 14px;font-size:13px;${S.cfg.hand === h ? 'background:var(--cy);color:var(--on-cy)' : 'background:var(--c3)'}">${h}</button>`).join('')}</div></div>
+    <div style="background:var(--c1);border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:14px">Suavizado del cursor</div><div class="mono" style="font-size:11px;color:var(--dim)">Filtro One Euro</div></div>${sw('filter', 'Suavizado del cursor')}</div>
+   </div></div>
+   <div><div class="mono" style="font-size:12px;color:var(--dim);letter-spacing:.06em;margin-bottom:8px">PRÓXIMO CLIC</div>
+   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">${[['left', 'mouse', 'Clic izquierdo'], ['right', 'contextual_token', 'Clic derecho'], ['drag', 'pan_tool', 'Arrastrar'], ['double', 'ads_click', 'Doble clic']].map(a => `<button data-a="arm" data-v="${a[0]}" id="ha-${a[0]}" class="mono" style="min-height:74px;border:0;cursor:pointer;font-size:12px;font-weight:600;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--c3)"><span class="ms">${a[1]}</span>${a[2]}</button>`).join('')}</div></div>
+   <div style="display:flex;flex-wrap:wrap;gap:12px;background:var(--c1);border-radius:14px;padding:12px;align-items:center">
+    <button class="btn" data-a="recenter" style="flex:1 1 150px;min-height:64px"><span class="ms" style="color:var(--cy)">filter_center_focus</span>Recentrar</button>
+    <div style="display:flex;align-items:center;gap:8px"><span class="mono" style="font-size:11px;color:var(--dim)">SENS.</span><button class="sq" data-a="bump" data-k="sens" data-d="-1" aria-label="Bajar sensibilidad"><span class="ms">remove</span></button><span class="mono" style="color:var(--cy);min-width:44px;text-align:center" id="hSens">${S.cfg.sens}/10</span><button class="sq" data-a="bump" data-k="sens" data-d="1" aria-label="Subir sensibilidad"><span class="ms">add</span></button></div>
+    <button data-a="pause" id="hPause" style="flex:1 1 150px;min-height:64px;border:0;cursor:pointer;border-radius:10px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px"></button></div></div>`;
+  if (OVL === 'tray') r.innerHTML = `<div class="panel" style="padding:18px">
+   <div class="between"><div style="display:flex;gap:12px;align-items:center"><img src="logo.svg" style="width:40px;height:40px"><div><div class="mono" style="font-weight:700">GESTUREFLOW <span style="font-size:11px;color:var(--cy);background:var(--c2);padding:1px 6px;border-radius:4px">FASE 1</span></div><div style="font-size:12px" id="trStatus">—</div></div></div>
+   <button class="sw" data-a="pause" id="trSw" style="width:72px;height:44px" role="switch" aria-checked="false" aria-label="Seguimiento de la mano"><span class="knob" style="width:36px;height:36px;background:var(--fg);color:var(--bg1)"><span class="ms" style="font-size:18px">check</span></span></button></div>
+   <div style="display:flex;gap:8px">${[['CPU PIPELINE', 'tyCpu', 'var(--fg)'], ['FRAME RATE', 'tyFps', 'var(--gr)'], ['LATENCIA', 'tyLat', 'var(--cy)']].map(t => `<div style="flex:1;background:var(--c2);border-radius:10px;padding:8px 10px"><div class="mono" style="font-size:11px;color:var(--dim)">${t[0]}</div><div class="mono" style="font-size:18px;font-weight:700;color:${t[2]}" id="${t[1]}">—</div></div>`).join('')}</div>
+   ${slider('sens', true)}${slider('dwell_ms', true)}
+   <div class="mono" style="font-size:11px;color:var(--dim);letter-spacing:.08em">MODO OPERATIVO INMEDIATO</div>
+   <div style="display:flex;gap:8px">${S.modes.map((m, i) => `<button data-a="mode" data-v="${i}" aria-pressed="${S.cfg.mode === i}" class="mono" style="flex:1;min-height:64px;border:0;cursor:pointer;font-size:11px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;${S.cfg.mode === i ? 'background:var(--c4);color:var(--cy)' : 'background:var(--c2);color:var(--mut)'}"><span class="ms" style="font-size:22px">${m.icon}</span>${m.name}</button>`).join('')}</div>
+   <div style="display:flex;gap:8px"><button class="btn" data-a="view" data-v="lab" style="flex:1"><span class="ms" style="color:var(--cy);font-size:20px">tune</span>Recalibrar</button><button class="btn dan" data-a="pause" id="trFreeze" style="flex:1"></button></div>
+   <div style="display:flex;gap:8px"><button class="btn" data-a="camrestart" style="flex:1"><span class="ms" style="color:var(--cy);font-size:20px">restart_alt</span>Reiniciar cámara</button><button class="btn dan" data-a="quit" style="flex:1"><span class="ms" style="font-size:20px">power_settings_new</span>Salir</button></div>
+   <div style="display:flex;justify-content:space-between"><button class="btn" data-a="suite" style="background:transparent;min-height:44px;font:12px var(--mono);color:var(--mut)"><span class="ms" style="font-size:16px">open_in_new</span>Abrir suite completa</button><button class="btn" data-a="ovl" data-v="tray" style="background:transparent;min-height:44px;font:12px var(--mono);color:var(--mut)"><span class="ms" style="font-size:16px">close</span>Ocultar</button></div></div>`;
+  $$('#root input[type=range][data-k]').forEach(r => r.addEventListener('input', () => { const k = r.dataset.k, d = SL[k]; setCfg(k, rnd(k, r.value)); }));
+  syncFeeds(); tickOverlay();
+}
+function tickOverlay() {
+  const o = on();
+  if (OVL === 'actions') {
+    AI.forEach(a => { const b = $('#ai-' + a[0]); if (!b) return; const ar = T.armed === a[0]; b.classList.toggle('on', ar); b.querySelector('[data-tag]').textContent = ar ? (T.dragging ? 'SUJETANDO' : 'ARMADO') : a[0] === 'lock' ? (T.paused ? 'REANUDAR' : 'PAUSA') : ''; });
+    $('#armTxt').textContent = T.armed ? `Armado: ${ACT[T.armed][0]} — haz el próximo clic` : 'Selecciona una acción para el próximo clic';
+    $('#armBar').style.width = (T.armed ? T.progress * 100 : 0) + '%';
+    const mins = Math.floor((Date.now() - ui.started) / 60000), left = 20 - (mins % 20);
+    $('#ergo').textContent = `Sesión: ${mins} min. Micro-pausa sugerida en ${left} min (abre la palma para descansar).`;
+  }
+  if (OVL === 'hud') {
+    $$('.feed').forEach(drawFeed);
+    $('#hDot').style.background = o ? 'var(--gr)' : 'var(--err)';
+    $('#hJit').textContent = '±' + T.jitter + 'px'; $('#hFps').textContent = Math.round(T.fps) + ' FPS'; $('#hLux').textContent = 'luz ' + brightPct() + '%';
+    $('#hLock').textContent = T.lm ? T.det + '% LOCK' : 'SIN SEÑAL';
+    $('#hGest').textContent = !o ? 'PAUSADO' : String(T.label || 'sin mano').toUpperCase();
+    $('#hPress').style.width = T.pressure + '%'; $('#hPressT').textContent = T.pressure + '%';
+    ['left', 'right', 'drag', 'double'].forEach(k => { const b = $('#ha-' + k); const ar = T.armed === k; b.style.background = ar ? 'var(--cy)' : 'var(--c3)'; b.style.color = ar ? 'var(--on-cy)' : 'var(--fg)'; });
+    const p = $('#hPause'); p.style.background = o ? 'var(--redbg)' : 'var(--gr2)'; p.style.color = o ? 'var(--on-red)' : 'var(--on-gr)'; setHTML(p, `<span class="ms">${o ? 'pause_circle' : 'play_circle'}</span>${o ? 'Pausar (F9)' : 'Reanudar (F9)'}`);
+    $('#hSens').textContent = S.cfg.sens + '/10';
+  }
+  if (OVL === 'tray') {
+    $('#trStatus').textContent = o ? 'Seguimiento activo y transmitiendo' : 'Seguimiento en pausa'; $('#trStatus').style.color = o ? 'var(--gr)' : 'var(--err)';
+    const s = $('#trSw'); s.classList.toggle('on', o); s.setAttribute('aria-checked', o); s.style.background = o ? 'var(--gr2)' : 'var(--c4)'; s.querySelector('.knob').style.transform = o ? 'translateX(28px)' : 'none'; s.querySelector('.ms').textContent = o ? 'check' : 'close';
+    $('#tyCpu').textContent = T.cpu.toFixed(1) + '%'; $('#tyFps').textContent = Math.round(T.fps) + ' FPS'; $('#tyLat').textContent = T.latency + ' ms';
+    setHTML($('#trFreeze'), `<span class="ms" style="font-size:20px">${T.paused ? 'play_circle' : 'pause_circle'}</span>${T.paused ? 'Reanudar [F9]' : 'Congelar [F9]'}`);
+  }
+}
+
+/* ---------- acciones (delegación de clics) ---------- */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-a]'); if (!el || el.disabled) return;
+  const a = el.dataset.a, v = el.dataset.v, k = el.dataset.k, d = +el.dataset.d;
+  const A = {
+    view: () => { if (OVL !== 'main') return call('showView', v); ui.view = v; render(); },
+    ovl: () => call('toggleOverlay', v),
+    pause: () => call('toggleTracking'),
+    min: () => call('minimize'), max: () => call('toggleMax'), close: () => call('closeWindow'), suite: () => call('openSuite'),
+    quit: () => call('quitApp'),
+    camrestart: () => { camErr = ''; lastTick = Date.now() + 4000; updateBanner('Reiniciando cámara…'); call('restartCamera'); },
+    bump: () => { const s = SL[k]; setCfg(k, rnd(k, Math.min(s.max, Math.max(s.min, S.cfg[k] + d * s.step)))); },
+    tog: () => setCfg(k, !S.cfg[k], true),
+    hand: () => { setCfg('hand', v); render(); },
+    anchor: () => { setCfg('anchor', v); render(); },
+    cam: () => { setCfg('camera_index', (S.cfg.camera_index + 1) % Math.max(1, S.cameras.length)); toast('Cambiando a ' + camName()); render(); },
+    recenter: () => call('recenter'), calib: () => call('calibrate'),
+    save: () => call('saveConfig', ok => { if (!ok) return; ui.dirty = false; const b = $('#saveBtn'); if (b) { b.style.background = 'var(--gr)'; b.innerHTML = '<span class="ms">task_alt</span>¡Guardado con éxito!'; setTimeout(() => ui.view === 'cfg' && render(), 1800); } const s = $('#saved'); if (s) { s.textContent = 'sin cambios'; s.style.color = 'var(--gr)'; } }),
+    reset: () => { call('resetConfig'); ui.dirty = true; },
+    mode: () => call('setMode', +v),
+    arm: () => call('arm', v),
+    sand: () => { ui.sandClicks++; $('#sandN').textContent = ui.sandClicks; if (S.cfg.visual) { const r = $('#sand').getBoundingClientRect(), x = document.createElement('div'); x.className = 'ripple'; x.style.left = (e.clientX - r.left) + 'px'; x.style.top = (e.clientY - r.top) + 'px'; $('#sand').appendChild(x); setTimeout(() => x.remove(), 400); } },
+    phase: () => { ui.phase = +v; render(); },
+    cycle: () => { const g = GEST.find(x => x.k === v); if (!g.act) return; const i = g.acts.indexOf(S.cfg[g.act]); setCfg(g.act, g.acts[(i + 1) % g.acts.length], true); },
+    test: () => { const g = GEST.find(x => x.k === v); if (g.lock) return toast('Requiere Fase 2 Pro'); if (g.en && !S.cfg[g.en]) return toast('Activa el gesto para probarlo'); ui.testing = v; ui.testUntil = Date.now() + 6000; toast('Haz el gesto «' + g.t + '» frente a la cámara'); render(); },
+    locked: () => toast(GEST.find(x => x.k === v).lock ? 'Requiere Fase 2 Pro' : 'Gesto de seguridad: siempre activo'),
+    labhit: () => { e.stopPropagation(); labHit(+v); },
+    labmiss: () => { if (e.target.closest('.target')) return; ui.lab.miss++; render(); },
+    labreset: () => { ui.lab = { hits: [], miss: 0, times: [], hover: null, t0: 0, tm: null }; render(); },
+    road: () => { ui.roadTab = v; render(); },
+    role: () => { ui.role = ((ui.role || 0) + 1) % ROLES.length; $('#bRole').firstChild.textContent = ROLES[ui.role]; },
+    beta: () => { const n = $('#bName').value.trim(), m = $('#bMail').value.trim(); if (!n) return $('#bErr').textContent = 'Indica tu nombre o institución.'; if (!/^\S+@\S+\.\S+$/.test(m)) return $('#bErr').textContent = 'Escribe un correo válido, por ejemplo nombre@dominio.com.'; call('saveInterest', JSON.stringify({ nombre: n, correo: m, rol: ROLES[ui.role || 0] }), ok => { if (ok) { ui.betaSent = true; render(); } }); },
+    betareset: () => { ui.betaSent = false; render(); },
+    rounds: () => { ui.rounds = Math.min(12, Math.max(1, ui.rounds + d)); render(); },
+    rec: () => { call('startRecording', ui.user, ui.rounds); ui.recording = true; render(); },
+    cancelrec: () => { call('cancelRecording'); ui.recording = false; render(); },
+    discard: () => call('discardFile', v),
+    train: () => { ui.trainBusy = true; ui.trainRes = null; call('train'); render(); },
+    tutclick: () => { ui.tutClicks++; $('#tBtn').textContent = ui.tutClicks >= 3 ? '✓ ¡Listo!' : `Haz clic aquí (${ui.tutClicks}/3)`; if (ui.tutClicks >= 3) tutDone(2); },
+    tutbump: () => { const r = $('#tRange'); r.value = +r.value + d; r.dispatchEvent(new Event('input')); },
+    tutrec: () => { call('tutorialDone'); ui.view = 'train'; ui.rounds = 3; ui.recording = true; call('startRecording', ui.user, 3); render(); },
+    tutnav: () => { const n = ui.tut + d; if (n >= TUT.length) { call('tutorialDone'); ui.view = 'mon'; toast('¡Tutorial completado!'); } else ui.tut = Math.max(0, n); render(); },
+  };
+  A[a] && A[a]();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'F9') e.preventDefault();  // F9 lo atiende el atajo global (Python); llamarlo aquí también lo pausaba y reanudaba a la vez
+  if (e.key === 'Escape' && OVL !== 'main') call('toggleOverlay', OVL);
+});
+/* arrastrar y redimensionar la ventana sin marco */
+document.addEventListener('mousedown', e => {
+  if (e.button !== 0 || OVL === 'tray' || OVL === 'actions') return;
+  const m = 6, x = e.clientX, y = e.clientY, W = innerWidth, H = innerHeight;
+  const edges = (x < m ? 'l' : x > W - m ? 'r' : '') + (y < m ? 't' : y > H - m ? 'b' : '');
+  if (edges && OVL === 'main') { call('startResize', edges); e.preventDefault(); return; }
+  if (e.target.closest('[data-drag]') && !e.target.closest('button')) { call('startMove', OVL); e.preventDefault(); }
+});
+document.addEventListener('dblclick', e => { if (OVL === 'main' && e.target.closest('#top') && !e.target.closest('button')) call('toggleMax'); });
+document.addEventListener('mousemove', e => {
+  if (OVL !== 'main') return; const m = 6, x = e.clientX, y = e.clientY, W = innerWidth, H = innerHeight;
+  const l = x < m, r = x > W - m, t = y < m, b = y > H - m;
+  document.body.style.cursor = (l && t) || (r && b) ? 'nwse-resize' : (r && t) || (l && b) ? 'nesw-resize' : l || r ? 'ew-resize' : t || b ? 'ns-resize' : '';
+});
+
+/* ---------- arranque ---------- */
+function onState(js) {
+  const s = JSON.parse(js), structural = JSON.stringify([s.files, s.runs, s.overlays, s.cameras]) !== JSON.stringify([S.files, S.runs, S.overlays, S.cameras]);
+  const cfgChanged = JSON.stringify(s.cfg) !== JSON.stringify(S.cfg) && Date.now() - ui.lastEdit > 800;
+  S = s; if (structural || cfgChanged) render();
+}
+function boot(backend) {
+  bk = backend;
+  bk.tick.connect(js => onTick(JSON.parse(js)));
+  bk.state.connect(onState);
+  bk.toast.connect(toast);
+  bk.camError.connect(m => { camErr = m; updateBanner(); });
+  bk.trained.connect(js => { ui.trainBusy = false; ui.trainRes = JSON.parse(js); ui.view === 'train' && render(); toast(ui.trainRes.ok ? 'Entrenamiento terminado' : 'No se pudo entrenar: revisa el motivo en «3 · Entrenar»'); });
+  bk.recDone.connect(js => {
+    ui.recording = false; const r = JSON.parse(js), auto = S.cfg.auto_train;
+    if (auto) { ui.trainBusy = true; ui.trainRes = null; }
+    toast(auto ? `¡Listo! ${r.n} muestras guardadas. Entrenando tu modelo…` : `¡Listo! ${r.n} muestras guardadas`);
+    ui.view === 'train' && render();
+    const m = $('#trMsg'); if (m) m.textContent = auto ? `¡Listo! ${r.n} muestras guardadas. Entrenando tu modelo con todos tus datos…` : `¡Listo! ${r.n} muestras guardadas. Ahora pulsa «Entrenar modelo».`;
+  });
+  bk.getState(js => {
+    S = JSON.parse(js);
+    if (OVL === 'main') { document.body.classList.add('main'); $('#root').innerHTML = shell(); ui.view = S.cfg.tutorial_done ? 'mon' : 'tut'; }
+    render();
+  });
+}
+if (window.qt && qt.webChannelTransport) new QWebChannel(qt.webChannelTransport, ch => boot(ch.objects.backend));
+else boot(mockBackend());
+
+/* backend simulado: permite ver la interfaz en un navegador sin Python */
+function mockBackend() {
+  const sig = () => { const f = []; return { connect: g => f.push(g), emit: v => f.forEach(g => g(v)) }; };
+  const st = { cfg: { camera_index: 0, hand: 'Derecha', zone_center: [.5, .47], sens: 5, anchor: 'nudillos', max_speed: 2400, dead_px: 4, filter: true, min_cutoff: 1, beta: .007, pinch_click: true, dwell_click: true, pinch_action: 'left', dwell_action: 'left', pinch_conf: .9, dwell_ms: 1200, dwell_radius: 30, debounce_ms: 250, audio: true, visual: true, mode: 0, tutorial_done: true, auto_train: true },
+    cameras: ['HD Integrada 720p', 'Cámara USB 1080p'], files: [{ name: '20261006_200318_usuario.csv', samples: 3000, rounds: 3 }], runs: [{ run: '2026-10-06_200857_mlp-extras', acc: .872, rules: .799, promoted: true }],
+    modes: [{ name: 'Neuro Asistido', icon: 'accessibility_new' }, { name: 'Precisión Dibujo', icon: 'draw' }, { name: 'Reposo Pausa', icon: 'bedtime' }], overlays: {} };
+  const m = { tick: sig(), state: sig(), toast: sig(), trained: sig(), recDone: sig(), camError: sig(), getState: cb => cb(JSON.stringify(st)) };
+  let paused = false, k = 0;
+  m.toggleTracking = () => { paused = !paused; };
+  m.setConfig = (key, v) => { st.cfg[key] = JSON.parse(v); };
+  m.saveConfig = cb => cb && cb(true); m.saveInterest = (_, cb) => cb && cb(true);
+  setInterval(() => {
+    k++; const cx = .5 + .12 * Math.sin(k / 30), cy = .5 + .08 * Math.cos(k / 23);
+    const lm = Array.from({ length: 21 }, (_, i) => { const f = Math.floor((i - 1) / 4), j = (i - 1) % 4; return i === 0 ? [cx, cy + .2] : [cx - .09 + f * .045 + (f === 0 ? -.04 : 0), cy + .08 - (j + 1) * (f === 0 ? .03 : .05)]; });
+    m.tick.emit(JSON.stringify({ label: 'puntero', conf: 97, det: 98, side: 'Derecha', progress: (k % 40) / 40, cursor: [cx * 1920, cy * 1080], clicks: Math.floor(k / 40), fps: 29.8, latency: 21, bright: 128, cpu: 11.2, ram: 412, paused, hz: 120, exposure: -5, source: 'modelo', pressure: 18, jitter: 6, zone: [.22, .2, .78, .74], screen: [1920, 1080], ptr: [cx, cy - .05], event: ['Clic izquierdo (dwell)', 97], armed: null, rec: null, lm }));
+  }, 66);
+  return new Proxy(m, { get: (o, p) => p in o ? o[p] : (...a) => console.log('backend.' + String(p), ...a) });
+}
+</script>
+</body>
+</html>
